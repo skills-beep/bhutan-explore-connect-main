@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform, useMotionValue, useTransform as useTransformMotion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import festivalMask1 from "@/assets/festival-mask-1.png";
@@ -6,10 +6,10 @@ import festivalMask2 from "@/assets/festival-mask-2.png";
 import festivalMask3 from "@/assets/festival-mask-3.png";
 import festivalMask4 from "@/assets/festival-mask-4.png";
 import bumthangImage from "@/assets/bumthang.webp";
-import ladningpagemain from "@/assets/ladningpagemain.jpg";
 import landingpage1 from "@/assets/landingpage1.jpg";
 import landingpage2 from "@/assets/landingpage2.jpg";
 import landingpage3 from "@/assets/landingpage3.jpg";
+import landingpageMain from "@/assets/ladningpagemain.jpg";
 import paroImage from "@/assets/paro.jpg";
 import phobijaImage from "@/assets/phobija.avif";
 import punakhaImage from "@/assets/punakha.jpg";
@@ -18,8 +18,9 @@ import haaImage from "@/assets/haa.jpg";
 import bhutanImage from "@/assets/bhutan.avif";
 import { packages, destinations } from "@/data/packages";
 import PackageCard from "@/components/PackageCard";
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import ThreeScene from "@/components/ThreeScene";
+import PremiumCinematicHero from "@/components/PremiumCinematicHero";
 
 const destinationImages: Record<string, string> = {
   paro: paroImage,
@@ -37,122 +38,12 @@ const Section = ({ children, className = "" }: { children: React.ReactNode; clas
 );
 
 const Index = () => {
-  const heroRef = useRef<HTMLDivElement>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth - 0.5) * 2,
-        y: (e.clientY / window.innerHeight - 0.5) * 2,
-      });
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
   const featuredPackages = packages.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero — 3D Festival Image Hero */}
-      <section 
-        ref={heroRef} 
-        className="relative h-screen flex items-center justify-center overflow-hidden perspective"
-        style={{ perspective: "1200px" }}
-      >
-        {/* 3D Background Layer with Parallax */}
-        <motion.div
-          className="absolute inset-0"
-          style={{
-            scale: heroScale,
-          }}
-        >
-          <motion.div
-            className="absolute inset-0 overflow-hidden"
-            style={{
-              rotateX: mousePosition.y * 5,
-              rotateY: mousePosition.x * 5,
-              transformStyle: "preserve-3d",
-            }}
-            transition={{ type: "spring", stiffness: 150, damping: 30 }}
-          >
-            <img
-              src={ladningpagemain}
-              alt="Bhutanese Tshechu Festival"
-              className="w-full h-full object-cover shadow-2xl"
-              loading="eager"
-            />
-            {/* 3D Shadow Effect */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
-          </motion.div>
-        </motion.div>
-
-        {/* Vibrant Overlay Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent via-30% to-black/60" />
-
-        {/* Glowing side effects for 3D depth */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-blue-500/0 via-purple-500/5 to-transparent" />
-          <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-orange-500/0 via-red-500/5 to-transparent" />
-        </div>
-        
-        {/* Content Overlay */}
-        <motion.div style={{ opacity: heroOpacity }} className="relative z-10 text-center px-6 max-w-3xl mx-auto">
-          <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-white/80 text-sm font-medium tracking-widest uppercase mb-5"
-          >
-            The Kingdom of Bhutan
-          </motion.p>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="apple-headline text-white text-5xl md:text-7xl lg:text-[80px] mb-5 drop-shadow-2xl"
-          >
-            The last{" "}
-            <span className="italic font-light text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500">Shangri-La.</span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-white/90 text-lg md:text-xl font-light max-w-xl mx-auto mb-8 apple-body drop-shadow-lg"
-          >
-            Experience ancient traditions and sacred festivals in the Land of the Thunder Dragon.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex flex-col sm:flex-row gap-3 justify-center"
-          >
-            <Link to="/packages">
-              <Button 
-                size="lg"
-                className="bg-white text-black hover:bg-gray-100 font-semibold shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
-              >
-                Explore Packages
-              </Button>
-            </Link>
-            <Link to="/destinations">
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="border-white text-white hover:bg-white/20 font-semibold shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
-              >
-                Discover Destinations
-              </Button>
-            </Link>
-          </motion.div>
-        </motion.div>
-      </section>
+      {/* Premium Cinematic Hero with Layered Depth Masking */}
+      <PremiumCinematicHero />
 
       {/* Full-bleed mask strip — cinematic image band */}
       <section className="bg-foreground">

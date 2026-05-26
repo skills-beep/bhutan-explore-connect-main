@@ -1,0 +1,27 @@
+-- Connect Profiles Table
+CREATE TABLE IF NOT EXISTS public.connect_profiles (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  age INTEGER NOT NULL,
+  gender TEXT,
+  bio TEXT NOT NULL,
+  profile_photo TEXT,
+  id_card_scan TEXT,
+  face_photo TEXT,
+  email_verified BOOLEAN DEFAULT FALSE,
+  travel_group_code TEXT,
+  emergency_contact_name TEXT,
+  emergency_contact_phone TEXT,
+  languages JSONB DEFAULT '[]'::JSONB,
+  interests JSONB DEFAULT '[]'::JSONB,
+  verified TEXT DEFAULT 'unverified',
+  is_host BOOLEAN DEFAULT FALSE,
+  is_looking_for_buddy BOOLEAN DEFAULT FALSE,
+  host_details JSONB,
+  buddy_details JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  profile_visibility TEXT DEFAULT 'public',
+  CONSTRAINT age_valid CHECK (age >= 18)
+);
