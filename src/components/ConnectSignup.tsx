@@ -83,18 +83,9 @@ const ConnectSignup = ({ onProfileCreated }: { onProfileCreated?: (profile: Conn
       return;
     }
     
-    // Check verification steps
+    // Allow saving without full verification so users can create a profile first.
     if (!profile.emailVerified) {
-      alert("❌ Email verification required. Complete Step 2: Security, ID & Group first.");
-      return;
-    }
-    if (!profile.idCardScan) {
-      alert("❌ ID card scan required. Upload your government-issued ID in Step 2.");
-      return;
-    }
-    if (!profile.facePhoto) {
-      alert("❌ Face photo required. Capture your face photo in Step 2.");
-      return;
+      alert("⚠️ Your profile will be saved as unverified. Complete email or ID verification later for full trust.");
     }
 
     const verifiedStatus = profile.idCardScan ? "id" : profile.emailVerified ? "email" : "unverified";
@@ -124,46 +115,72 @@ const ConnectSignup = ({ onProfileCreated }: { onProfileCreated?: (profile: Conn
       profileVisibility: profile.profileVisibility || "public",
     };
 
-    // Save locally first for offline fallback
+    // Save to Supabase first, then localStorage as fallback
+    let savedToSupabase = false;
+    if (isSupabaseEnabled()) {
+      try {
+        const { error } = await supabase!.from("connect_profile").insert({
+          id: newProfile.id,
+          name: newProfile.name,
+          email: newProfile.email,
+          age: newProfile.age,
+          gender: newProfile.gender,
+          bio: newProfile.bio,
+          profile_photo: newProfile.profilePhoto,
+          id_card_scan: newProfile.idCardScan,
+          face_photo: newProfile.facePhoto,
+          email_verified: newProfile.emailVerified,
+          travel_group_code: newProfile.travelGroupCode,
+          emergency_contact_name: newProfile.emergencyContactName,
+          emergency_contact_phone: newProfile.emergencyContactPhone,
+          languages: newProfile.languages,
+          interests: newProfile.interests,
+          verified: newProfile.verified,
+          is_host: newProfile.isHost,
+          is_looking_for_buddy: newProfile.isLookingForBuddy,
+          host_details: newProfile.hostDetails,
+          buddy_details: newProfile.buddyDetails,
+          created_at: newProfile.createdAt,
+          profile_visibility: newProfile.profileVisibility,
+        });
+
+        if (error) {
+          console.error("❌ Supabase Error:", error);
+          console.error("Error code:", error.code);
+          console.error("Error message:", error.message);
+          
+          // Check if it's a table not found error
+          if (error.code === "PGRST116" || error.message?.includes("relation") || error.message?.includes("does not exist")) {
+            alert(`❌ Supabase tables not created yet!\n\nPlease run the SQL setup:\n\n1. Go to your Supabase Dashboard\n2. Click "SQL Editor"\n3. Copy and run the SQL from:\n   supabase-setup.sql\n\nThen try saving your profile again.`);
+          } else if (error.code === "42501" || error.message?.includes("permission")) {
+            alert(`❌ Permission error in Supabase.\n\nMake sure Row Level Security (RLS) policies allow inserts.\n\nError: ${error.message}`);
+          } else {
+            alert(`❌ Could not save to Supabase: ${error.message}\n\nCheck the browser console for details.`);
+          }
+          return;
+        } else {
+          savedToSupabase = true;
+          console.log("✅ Profile saved to Supabase!");
+        }
+      } catch (err) {
+        console.error("❌ Unexpected error saving to Supabase:", err);
+        alert(`❌ Error: ${err instanceof Error ? err.message : "Unknown error"}`);
+        return;
+      }
+    } else {
+      console.warn("⚠️ Supabase not configured. Saving locally only.");
+    }
+
+    // Save to localStorage as backup
     const existingProfiles = JSON.parse(localStorage.getItem("connectProfiles") || "[]");
     existingProfiles.push(newProfile);
     localStorage.setItem("connectProfiles", JSON.stringify(existingProfiles));
     localStorage.setItem("currentConnectProfile", JSON.stringify(newProfile));
 
-    if (isSupabaseEnabled()) {
-      const { error } = await supabase!.from("connect_profiles").insert({
-        id: newProfile.id,
-        name: newProfile.name,
-        email: newProfile.email,
-        age: newProfile.age,
-        gender: newProfile.gender,
-        bio: newProfile.bio,
-        profile_photo: newProfile.profilePhoto,
-        id_card_scan: newProfile.idCardScan,
-        face_photo: newProfile.facePhoto,
-        email_verified: newProfile.emailVerified,
-        travel_group_code: newProfile.travelGroupCode,
-        emergency_contact_name: newProfile.emergencyContactName,
-        emergency_contact_phone: newProfile.emergencyContactPhone,
-        languages: newProfile.languages,
-        interests: newProfile.interests,
-        verified: newProfile.verified,
-        is_host: newProfile.isHost,
-        is_looking_for_buddy: newProfile.isLookingForBuddy,
-        host_details: newProfile.hostDetails,
-        buddy_details: newProfile.buddyDetails,
-        created_at: newProfile.createdAt,
-        profile_visibility: newProfile.profileVisibility,
-      });
-
-      if (error) {
-        console.error("Supabase insert error:", error);
-        alert("Profile saved locally, but Supabase sync failed. Check console for details.");
-      }
-    }
-
     onProfileCreated?.(newProfile);
-    alert("Profile created successfully! You can now connect with other travelers and hosts!");
+    alert(savedToSupabase 
+      ? "✅ Profile created successfully and saved online in Supabase!" 
+      : "⚠️ Profile saved locally. Supabase was not available.");
     setStep(1);
   };
 
@@ -348,7 +365,7 @@ const ConnectSignup = ({ onProfileCreated }: { onProfileCreated?: (profile: Conn
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="font-medium">Upload Government ID</Label>
+                      <Label className="font-medium">Upload Government ID (optional)</Label>
                       <input
                         type="file"
                         accept="image/*,application/pdf"
@@ -363,6 +380,7 @@ const ConnectSignup = ({ onProfileCreated }: { onProfileCreated?: (profile: Conn
                         }}
                         className="block w-full rounded-lg border border-border p-2"
                       />
+                      <p className="text-xs text-muted-foreground">Uploading your ID will help verify your profile, but it is not required to save.</p>
                       {profile.idCardScan && (
                         <div className="rounded-xl border border-border overflow-hidden bg-background">
                           <img src={profile.idCardScan} alt="Uploaded ID" className="w-full object-contain" />
@@ -371,7 +389,8 @@ const ConnectSignup = ({ onProfileCreated }: { onProfileCreated?: (profile: Conn
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="font-medium">Face Capture</Label>
+                      <Label className="font-medium">Face Capture (optional)</Label>
+                      <p className="text-xs text-muted-foreground">Capture a selfie to improve verification trust, but this step is optional.</p>
                       <div className="space-y-3">
                         {profile.facePhoto && (
                           <div className="rounded-xl border border-border overflow-hidden bg-background">
