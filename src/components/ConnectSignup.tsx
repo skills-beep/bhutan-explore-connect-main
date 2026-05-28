@@ -119,7 +119,7 @@ const ConnectSignup = ({ onProfileCreated }: { onProfileCreated?: (profile: Conn
     let savedToSupabase = false;
     if (isSupabaseEnabled()) {
       try {
-        const { error } = await supabase!.from("connect_profile").insert({
+        const { error } = await supabase!.from("connect_profiles").insert({
           id: newProfile.id,
           name: newProfile.name,
           email: newProfile.email,
