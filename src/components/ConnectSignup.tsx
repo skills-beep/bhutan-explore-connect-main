@@ -14,6 +14,7 @@ import { Heart, Users, CheckCircle, Mail, Shield, Sparkles, ArrowRight, Home, Ba
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase, isSupabaseEnabled } from "@/lib/supabase";
+import { emailVerificationService } from "@/lib/email-verification";
 import type { ConnectProfile } from "@/lib/types";
 
 const languages = ["English", "Dzongkha", "Mandarin", "French", "German", "Spanish", "Japanese"];
@@ -325,15 +326,21 @@ const ConnectSignup = ({ onProfileCreated }: { onProfileCreated?: (profile: Conn
                           onChange={(e) => setProfile({ ...profile, email: e.target.value })}
                         />
                         <Button
-                          onClick={() => {
+                          onClick={async () => {
                             if (!profile.email) {
                               alert("Enter your email before sending a verification code.");
                               return;
                             }
-                            const code = Math.floor(100000 + Math.random() * 900000).toString();
-                            setSentCode(code);
-                            setIsEmailSent(true);
-                            alert(`Verification code sent to ${profile.email}. Use code ${code} for this demo.`);
+                            const result = await emailVerificationService.sendVerificationCode(
+                              profile.email,
+                              profile.name || "User"
+                            );
+                            if (result.success) {
+                              setIsEmailSent(true);
+                              toast({ title: "Success", description: "Verification code sent to your email!" });
+                            } else {
+                              alert(`❌ ${result.error}`);
+                            }
                           }}
                         >
                           Send Code
@@ -347,12 +354,21 @@ const ConnectSignup = ({ onProfileCreated }: { onProfileCreated?: (profile: Conn
                         />
                         <Button
                           disabled={!isEmailSent}
-                          onClick={() => {
-                            if (emailCode === sentCode) {
+                          onClick={async () => {
+                            if (!profile.email) {
+                              alert("Email is required");
+                              return;
+                            }
+                            const result = await emailVerificationService.verifyCode(
+                              profile.email,
+                              emailCode
+                            );
+                            if (result.success) {
                               setProfile({ ...profile, emailVerified: true });
-                              alert("Email verified successfully.");
+                              setEmailCode("");
+                              toast({ title: "Success", description: "Email verified successfully!" });
                             } else {
-                              alert("Incorrect verification code. Try again.");
+                              alert(`❌ ${result.error}`);
                             }
                           }}
                         >
