@@ -13,6 +13,7 @@ import DestinationDetailPage from "./pages/DestinationDetailPage";
 import BhutanConnectsPage from "./pages/BhutanConnectsPage";
 import NotFound from "./pages/NotFound";
 import UserProfileManager from "./components/UserProfileManager";
+import MessagesInbox from "./components/MessagesInbox";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import SplashScreen from "./components/SplashScreen";
@@ -45,6 +46,7 @@ const App = () => {
               <Route path="/destinations" element={<DestinationsPage />} />
               <Route path="/destinations/:id" element={<DestinationDetailPage />} />
               <Route path="/bhutan-connects" element={<BhutanConnectsPage />} />
+              <Route path="/messages" element={<MessagesInbox />} />
               <Route path="/profile" element={<UserProfileManager />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

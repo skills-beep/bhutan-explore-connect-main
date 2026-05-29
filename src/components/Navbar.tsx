@@ -11,6 +11,7 @@ const navLinks = [
   { to: "/packages", label: "Packages" },
   { to: "/destinations", label: "Destinations" },
   { to: "/bhutan-connects", label: "Connect" },
+  { to: "/messages", label: "Messages" },
   { to: "/companies", label: "Companies" },
 ];
 
