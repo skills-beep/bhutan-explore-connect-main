@@ -6,8 +6,13 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Instrument Serif', serif;
+  font-family: var(--font-body);
   background: black;
+}
+
+/* Ensure headings/text use the same professional UI font */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
 }
 
 @layer base {

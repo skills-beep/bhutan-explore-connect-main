@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Users, Star, MessageCircle, Search, Heart, Calendar, Globe, LogIn, UserPlus, ArrowRight } from "lucide-react";
+import { MapPin, Users, Star, MessageCircle, Search, Heart, Calendar, Globe, LogIn, UserPlus, ArrowRight, Shield } from "lucide-react";
 import { hosts, buddies, Host, Buddy } from "@/data/packages";
 import Messages from "@/components/Messages";
 import ConnectSignup from "@/components/ConnectSignup";
@@ -123,49 +123,49 @@ const BhutanConnectsPage = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-border p-6 hover:shadow-card transition-all duration-300 bg-gradient-to-br from-background to-secondary/5"
+      className="rounded-xl border border-border p-4 hover:shadow-card transition-all bg-gradient-to-br from-background to-secondary/5"
     >
-      <div className="flex items-start gap-4 mb-4">
-        <Avatar className="h-16 w-16">
+      <div className="flex items-start gap-3 mb-3">
+        <Avatar className="h-12 w-12 flex-shrink-0">
           <AvatarImage src={host.profilePhoto} />
-          <AvatarFallback className="text-lg">{host.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+          <AvatarFallback className="text-xs font-bold">{host.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
         </Avatar>
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-semibold">{host.name}, {host.age}</h3>
-            <Badge variant={host.verified === 'id' ? 'default' : 'secondary'} className="text-xs">
-              {host.verified === 'id' ? 'ID Verified' : host.verified === 'email' ? 'Email Verified' : 'Unverified'}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <h3 className="text-sm font-semibold truncate text-black dark:text-white">{host.name}, {host.age}</h3>
+            <Badge variant={host.verified === 'id' ? 'default' : 'secondary'} className="text-xs whitespace-nowrap flex-shrink-0">
+              {host.verified === 'id' ? 'Verified' : 'Unverified'}
             </Badge>
           </div>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-            <MapPin className="h-4 w-4" />
-            {host.location}
+          <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+            <MapPin className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">{host.location}</span>
           </div>
-          <div className="flex items-center gap-1 text-sm">
-            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+          <div className="flex items-center gap-1 text-xs">
+            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
             <span className="font-medium">{host.rating}</span>
             <span className="text-muted-foreground">({host.reviewCount})</span>
           </div>
         </div>
       </div>
 
-      <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{host.bio}</p>
+      <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed">{host.bio}</p>
 
-      <div className="space-y-2 mb-4">
-        <div className="text-sm">
-          <span className="font-medium">Space:</span> {host.spaceType}
+      <div className="space-y-1.5 mb-3 text-xs">
+        <div>
+          <span className="font-medium text-foreground">Space:</span> <span className="text-muted-foreground">{host.spaceType}</span>
         </div>
-        <div className="text-sm">
-          <span className="font-medium">Max guests:</span> {host.maxGuests}
+        <div>
+          <span className="font-medium text-foreground">Max guests:</span> <span className="text-muted-foreground">{host.maxGuests}</span>
         </div>
-        <div className="text-sm">
-          <span className="font-medium">Languages:</span> {host.languages.join(', ')}
+        <div>
+          <span className="font-medium text-foreground">Languages:</span> <span className="text-muted-foreground">{host.languages.join(', ')}</span>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-1 mb-4">
+      <div className="flex flex-wrap gap-1 mb-3">
         {host.interests.map(interest => (
-          <Badge key={interest} variant="outline" className="text-xs">
+          <Badge key={interest} variant="outline" className="text-xs py-0.5">
             {interest}
           </Badge>
         ))}
@@ -173,10 +173,10 @@ const BhutanConnectsPage = () => {
 
       <Button
         onClick={() => handleConnect('host', host.id)}
-        className="w-full"
+        className="w-full text-xs h-8"
       >
-        <Heart className="h-4 w-4 mr-2" />
-        Send Stay Request
+        <Heart className="h-3 w-3 mr-1" />
+        Request
       </Button>
     </motion.div>
   );
@@ -185,55 +185,55 @@ const BhutanConnectsPage = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-border p-6 hover:shadow-card transition-all duration-300 bg-gradient-to-br from-background to-secondary/5"
+      className="rounded-xl border border-border p-4 hover:shadow-card transition-all bg-gradient-to-br from-background to-secondary/5"
     >
-      <div className="flex items-start gap-4 mb-4">
-        <Avatar className="h-16 w-16">
+      <div className="flex items-start gap-3 mb-3">
+        <Avatar className="h-12 w-12 flex-shrink-0">
           <AvatarImage src={buddy.profilePhoto} />
-          <AvatarFallback className="text-lg">{buddy.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+          <AvatarFallback className="text-xs font-bold">{buddy.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
         </Avatar>
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-semibold">{buddy.name}, {buddy.age}</h3>
-            <Badge variant={buddy.verified === 'id' ? 'default' : 'secondary'} className="text-xs">
-              {buddy.verified === 'id' ? 'ID Verified' : buddy.verified === 'email' ? 'Email Verified' : 'Unverified'}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <h3 className="text-sm font-semibold truncate text-black dark:text-white">{buddy.name}, {buddy.age}</h3>
+            <Badge variant={buddy.verified === 'id' ? 'default' : 'secondary'} className="text-xs whitespace-nowrap flex-shrink-0">
+              {buddy.verified === 'id' ? 'Verified' : 'Unverified'}
             </Badge>
           </div>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-            <Globe className="h-4 w-4" />
-            {buddy.destinations.join(', ')}
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Globe className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">{buddy.destinations.join(', ')}</span>
           </div>
         </div>
       </div>
 
-      <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{buddy.bio}</p>
+      <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed">{buddy.bio}</p>
 
-      <div className="space-y-2 mb-4">
-        <div className="text-sm">
-          <span className="font-medium">Travel dates:</span> {buddy.startDate} to {buddy.endDate}
+      <div className="space-y-1.5 mb-3 text-xs">
+        <div>
+          <span className="font-medium text-foreground">Dates:</span> <span className="text-muted-foreground">{buddy.startDate} - {buddy.endDate}</span>
         </div>
-        <div className="text-sm">
-          <span className="font-medium">Looking for:</span> {buddy.companionAge} {buddy.companionGender}
+        <div>
+          <span className="font-medium text-foreground">Travel style:</span> <span className="text-muted-foreground">{buddy.travelStyle}</span>
         </div>
-        <div className="text-sm">
-          <span className="font-medium">Style:</span> {buddy.travelStyle}
-        </div>
-        <div className="text-sm">
-          <span className="font-medium">Languages:</span> {buddy.languages.join(', ')}
+        <div>
+          <span className="font-medium text-foreground">Languages:</span> <span className="text-muted-foreground">{buddy.languages.join(', ')}</span>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-1 mb-4">
-        {buddy.activities.map(activity => (
-          <Badge key={activity} variant="outline" className="text-xs">
+      <div className="flex flex-wrap gap-1 mb-3">
+        {buddy.activities.slice(0, 3).map(activity => (
+          <Badge key={activity} variant="outline" className="text-xs py-0.5">
             {activity}
           </Badge>
         ))}
       </div>
 
-      <Button onClick={() => handleConnect('buddy', buddy.id)} className="w-full">
-        <MessageCircle className="h-4 w-4 mr-2" />
-        Send Buddy Request
+      <Button
+        onClick={() => handleConnect('buddy', buddy.id)}
+        className="w-full text-xs h-8"
+      >
+        <MessageCircle className="h-3 w-3 mr-1" />
+        Message
       </Button>
     </motion.div>
   );
@@ -254,37 +254,36 @@ const BhutanConnectsPage = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-16 py-12"
+            className="text-center mb-12 py-8"
           >
-            <h1 className="apple-headline text-5xl md:text-6xl text-foreground mb-4">Bhutan Connects</h1>
-            <p className="text-muted-foreground text-xl mb-8 font-light">
+            <h1 className="apple-headline text-3xl md:text-4xl text-foreground mb-2">Bhutan Connects</h1>
+            <p className="text-muted-foreground text-sm md:text-base mb-6 font-light max-w-2xl mx-auto">
               Connect with authentic hosts and fellow travelers to share unforgettable Bhutan experiences
             </p>
             <Button
-              size="lg"
-              className="bg-gradient-to-r from-primary to-primary/80 text-lg"
+              size="sm"
+              className="bg-gradient-to-r from-primary to-primary/80 text-sm px-6"
               onClick={() => setShowSignup(true)}
             >
-              <UserPlus className="h-5 w-5 mr-2" />
-              Create Your Profile
-              <ArrowRight className="h-5 w-5 ml-2" />
+              <UserPlus className="h-4 w-4 mr-1" />
+              Create Profile
             </Button>
           </motion.div>
 
-          {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="p-6 rounded-2xl border border-border bg-card hover:shadow-card transition-all"
+              className="p-4 rounded-xl border border-border bg-card hover:shadow-card transition-all"
             >
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Heart className="h-6 w-6 text-primary" />
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
+                <Heart className="h-5 w-5 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Find Authentic Hosts</h3>
-              <p className="text-muted-foreground text-sm">
-                Stay with welcoming locals who share their culture, traditions, and hidden gems of Bhutan
+              <h3 className="text-sm font-semibold mb-1">Find Hosts</h3>
+              <p className="text-muted-foreground text-xs leading-relaxed">
+                Stay with welcoming locals who share their culture and traditions
               </p>
             </motion.div>
 
@@ -293,14 +292,14 @@ const BhutanConnectsPage = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="p-6 rounded-2xl border border-border bg-card hover:shadow-card transition-all"
+              className="p-4 rounded-xl border border-border bg-card hover:shadow-card transition-all"
             >
-              <div className="h-12 w-12 rounded-full bg-secondary/10 flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-secondary" />
+              <div className="h-10 w-10 rounded-lg bg-secondary/10 flex items-center justify-center mb-3">
+                <Users className="h-5 w-5 text-secondary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Find Travel Buddies</h3>
-              <p className="text-muted-foreground text-sm">
-                Meet like-minded travelers, share experiences, reduce costs, and create lasting friendships
+              <h3 className="text-sm font-semibold mb-1">Travel Buddies</h3>
+              <p className="text-muted-foreground text-xs leading-relaxed">
+                Meet travelers, share experiences, reduce costs, and make friends
               </p>
             </motion.div>
 
@@ -309,22 +308,22 @@ const BhutanConnectsPage = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="p-6 rounded-2xl border border-border bg-card hover:shadow-card transition-all"
+              className="p-4 rounded-xl border border-border bg-card hover:shadow-card transition-all"
             >
-              <div className="h-12 w-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-4">
-                <Shield className="h-6 w-6 text-amber-600" />
+              <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center mb-3">
+                <Shield className="h-5 w-5 text-amber-600" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Verified & Safe</h3>
-              <p className="text-muted-foreground text-sm">
-                All members are verified. Connect with trust and confidence in our community
+              <h3 className="text-sm font-semibold mb-1">Verified</h3>
+              <p className="text-muted-foreground text-xs leading-relaxed">
+                All members verified for trust and safety in our community
               </p>
             </motion.div>
           </div>
 
-          {/* Preview Cards */}
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold mb-8 text-center">Meet Our Community</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Community Preview */}
+          <div className="mb-10">
+            <h2 className="text-xl font-bold mb-4">Meet Our Community</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {hosts.slice(0, 2).map((host) => (
                 <HostCard key={host.id} host={host} />
               ))}
@@ -336,19 +335,19 @@ const BhutanConnectsPage = () => {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-12 text-center border border-primary/20"
+            className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl p-8 text-center border border-primary/20"
           >
-            <h3 className="text-3xl font-bold mb-4">Ready to Connect?</h3>
-            <p className="text-muted-foreground mb-6 text-lg">
-              Join hundreds of travelers and hosts creating authentic Bhutan experiences
+            <h3 className="text-xl font-bold mb-2">Ready to Connect?</h3>
+            <p className="text-muted-foreground mb-4 text-sm">
+              Join hundreds of travelers creating authentic Bhutan experiences
             </p>
             <Button
-              size="lg"
-              className="bg-gradient-to-r from-primary to-primary/80"
+              size="sm"
+              className="bg-gradient-to-r from-primary to-primary/80 text-sm px-6"
               onClick={() => setShowSignup(true)}
             >
-              <UserPlus className="h-5 w-5 mr-2" />
-              Get Started Today
+              <UserPlus className="h-4 w-4 mr-1" />
+              Get Started
             </Button>
           </motion.div>
         </div>
@@ -363,17 +362,17 @@ const BhutanConnectsPage = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-12"
+          className="mb-8"
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-3">
             <div>
-              <h1 className="apple-headline text-4xl md:text-6xl text-foreground">Welcome back, {currentProfile.name}!</h1>
-              <p className="text-muted-foreground text-lg font-light mt-2">
-                Browse our community and connect with hosts and travel buddies
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">Welcome, {currentProfile.name}!</h1>
+              <p className="text-muted-foreground text-xs md:text-sm font-light mt-1">
+                Browse community and connect with hosts and travelers
               </p>
             </div>
-            <Avatar className="h-16 w-16">
-              <AvatarFallback className="text-2xl font-bold bg-primary text-primary-foreground">
+            <Avatar className="h-14 w-14">
+              <AvatarFallback className="text-lg font-bold bg-primary text-primary-foreground">
                 {currentProfile.name.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
@@ -382,49 +381,48 @@ const BhutanConnectsPage = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
-            <TabsTrigger value="discover" className="flex items-center gap-2">
-              <Search className="h-4 w-4" />
+          <TabsList className="grid w-full grid-cols-4 mb-6 h-9">
+<TabsTrigger value="discover" className="flex items-center gap-1 text-xs text-foreground">
+              <Search className="h-3 w-3" />
               <span className="hidden sm:inline">Discover</span>
             </TabsTrigger>
-            <TabsTrigger value="community" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
+<TabsTrigger value="community" className="flex items-center gap-1 text-xs text-foreground">
+              <Users className="h-3 w-3" />
               <span className="hidden sm:inline">Community</span>
             </TabsTrigger>
-            <TabsTrigger value="messages" className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4" />
+<TabsTrigger value="messages" className="flex items-center gap-1 text-xs text-foreground">
+              <MessageCircle className="h-3 w-3" />
               <span className="hidden sm:inline">Messages</span>
             </TabsTrigger>
-            <TabsTrigger value="profile" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
+<TabsTrigger value="profile" className="flex items-center gap-1 text-xs text-foreground">
+              <Users className="h-3 w-3" />
               <span className="hidden sm:inline">Profile</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Discover Tab */}
-          <TabsContent value="discover" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <TabsContent value="discover" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Hosts Section */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="space-y-4"
+                className="space-y-3"
               >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Search className="h-5 w-5" />
-                      Find Hosts
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+                <div className="rounded-xl border border-border bg-card p-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-3">
+                    <Heart className="h-4 w-4" />
+                    Find Hosts
+                  </h3>
+                  <div className="space-y-2">
                     <Input
                       placeholder="Search hosts..."
                       value={hostSearch}
                       onChange={(e) => setHostSearch(e.target.value)}
+                      className="text-xs h-8"
                     />
                     <Select value={hostLocation} onValueChange={setHostLocation}>
-                      <SelectTrigger>
+                      <SelectTrigger className="text-xs h-8">
                         <SelectValue placeholder="Location" />
                       </SelectTrigger>
                       <SelectContent>
@@ -434,10 +432,10 @@ const BhutanConnectsPage = () => {
                         <SelectItem value="Punakha">Punakha</SelectItem>
                       </SelectContent>
                     </Select>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {filteredHosts.map((host) => (
                     <HostCard key={host.id} host={host} />
                   ))}
@@ -448,36 +446,35 @@ const BhutanConnectsPage = () => {
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="space-y-4"
+                className="space-y-3"
               >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Search className="h-5 w-5" />
-                      Find Buddies
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+                <div className="rounded-xl border border-border bg-card p-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-3">
+                    <Users className="h-4 w-4" />
+                    Find Buddies
+                  </h3>
+                  <div className="space-y-2">
                     <Input
                       placeholder="Search buddies..."
                       value={buddySearch}
                       onChange={(e) => setBuddySearch(e.target.value)}
+                      className="text-xs h-8"
                     />
                     <Select value={buddyDestination} onValueChange={setBuddyDestination}>
-                      <SelectTrigger>
+                      <SelectTrigger className="text-xs h-8">
                         <SelectValue placeholder="Destination" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All</SelectItem>
+                        <SelectItem value="all">All Destinations</SelectItem>
                         <SelectItem value="Paro">Paro</SelectItem>
                         <SelectItem value="Thimphu">Thimphu</SelectItem>
                         <SelectItem value="Punakha">Punakha</SelectItem>
                       </SelectContent>
                     </Select>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {filteredBuddies.map((buddy) => (
                     <BuddyCard key={buddy.id} buddy={buddy} />
                   ))}
@@ -498,32 +495,37 @@ const BhutanConnectsPage = () => {
 
           {/* Profile Tab */}
           <TabsContent value="profile">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Profile</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-6">
-                  <Avatar className="h-24 w-24">
-                    <AvatarFallback className="text-2xl font-bold bg-primary text-primary-foreground">
-                      {currentProfile.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="text-2xl font-bold">{currentProfile.name}</h3>
-                    <p className="text-muted-foreground">{currentProfile.email}</p>
-                    <Button variant="outline" className="mt-4">Edit Profile</Button>
+            <div className="rounded-xl border border-border bg-card p-6">
+              <h2 className="text-lg font-bold mb-6">Your Profile</h2>
+              <div className="flex flex-col md:flex-row items-start gap-6">
+                <Avatar className="h-20 w-20 flex-shrink-0">
+                  <AvatarFallback className="text-xl font-bold bg-primary text-primary-foreground">
+                    {currentProfile.name.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="text-base font-bold">{currentProfile.name}</h3>
+                  <p className="text-xs text-muted-foreground mb-3">{currentProfile.email}</p>
+                  <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
+                    <div>
+                      <span className="font-medium text-foreground">Age:</span> <span className="text-muted-foreground">{currentProfile.age}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-foreground">Gender:</span> <span className="text-muted-foreground">{currentProfile.gender}</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="font-medium text-foreground">Bio:</span> <span className="text-muted-foreground">{currentProfile.bio}</span>
+                    </div>
                   </div>
+                  <Button variant="outline" className="text-xs h-8">Edit Profile</Button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
     </div>
   );
 };
-
-import { Shield } from "lucide-react";
 
 export default BhutanConnectsPage;

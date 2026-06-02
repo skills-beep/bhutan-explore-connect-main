@@ -67,7 +67,7 @@ const CompaniesPage = () => {
                   </div>
                 )}
                 <div>
-                  <span className="font-medium text-foreground">Website:</span> <a href={company.website} target="_blank" rel="noreferrer" className="text-primary-foreground hover:underline">{company.website}</a>
+                  <span className="font-medium text-foreground">Website:</span> <a href={company.website} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">{company.website}</a>
                 </div>
                 <div>
                   <span className="font-medium text-foreground">Source:</span> {company.source}

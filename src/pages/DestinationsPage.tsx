@@ -65,16 +65,16 @@ const DestinationsPage = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                   {/* Package Count Badge */}
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
-                    <Package className="w-3 h-3 text-foreground" />
-                    <span className="text-xs font-semibold text-foreground">{dest.packageCount}</span>
+                  <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-md border border-white/20 rounded-full px-3 py-1 flex items-center gap-1">
+                    <Package className="w-3 h-3 text-white" />
+                    <span className="text-xs font-semibold text-white">{dest.packageCount}</span>
                   </div>
 
                   {/* Featured Badge for popular destinations */}
                   {dest.packageCount > 3 && (
-                    <div className="absolute top-4 left-4 bg-gold/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
-                      <Star className="w-3 h-3 text-gold-foreground fill-current" />
-                      <span className="text-xs font-semibold text-gold-foreground">Popular</span>
+                    <div className="absolute top-4 left-4 bg-orange-500/90 backdrop-blur-md border border-orange-300/50 rounded-full px-3 py-1 flex items-center gap-1">
+                      <Star className="w-3 h-3 text-white fill-white" />
+                      <span className="text-xs font-semibold text-white">Popular</span>
                     </div>
                   )}
                 </div>

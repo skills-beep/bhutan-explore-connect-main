@@ -68,7 +68,7 @@ const Index = () => {
           ))}
         </div>
         <div className="max-w-[980px] mx-auto px-6 py-12 text-center">
-          <p className="text-primary-foreground/50 text-xs tracking-widest uppercase">
+          <p className="text-white text-xs tracking-widest uppercase">
             Tshechu Festival — Sacred masked dances performed across Bhutan's ancient monasteries
           </p>
         </div>

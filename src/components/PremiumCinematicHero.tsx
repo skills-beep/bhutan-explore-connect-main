@@ -177,11 +177,11 @@ const PremiumCinematicHero: React.FC = () => {
             variants={itemVariants}
             className="flex items-center gap-3 justify-center"
           >
-            <div className="h-px w-8 bg-gradient-to-r from-transparent to-white/60" />
-            <span className="text-white/70 text-xs sm:text-sm font-semibold tracking-widest uppercase">
+            <div className="h-px w-8 bg-gradient-to-r from-transparent to-white/80" />
+            <span className="text-white text-xs sm:text-sm font-semibold tracking-widest uppercase">
               Welcome to the Kingdom
             </span>
-            <div className="h-px w-8 bg-gradient-to-l from-transparent to-white/60" />
+            <div className="h-px w-8 bg-gradient-to-l from-transparent to-white/80" />
           </motion.div>
 
           {/* Main Headline with Depth Masking */}
@@ -276,9 +276,9 @@ const PremiumCinematicHero: React.FC = () => {
             variants={itemVariants}
             className="mt-6 sm:mt-8 max-w-2xl"
           >
-            <p className="text-white/80 text-base sm:text-lg md:text-xl font-light leading-relaxed">
+            <p className="text-white text-base sm:text-lg md:text-xl font-light leading-relaxed">
               Experience ancient traditions, sacred festivals, and breathtaking landscapes where modern luxury meets 
-              <span className="text-white/95 font-medium"> timeless spirituality</span>.
+              <span className="text-white font-medium"> timeless spirituality</span>.
             </p>
           </motion.div>
 

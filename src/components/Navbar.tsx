@@ -30,10 +30,10 @@ const Navbar = () => {
 
   const navBg = scrolled || !isHome
     ? "bg-background/80 backdrop-blur-xl border-b border-border/50"
-    : "bg-transparent";
+    : "bg-black/30 backdrop-blur-md";
 
-  const textColor = !scrolled && isHome ? "text-primary-foreground" : "text-foreground";
-  const mutedColor = !scrolled && isHome ? "text-primary-foreground/60" : "text-muted-foreground";
+  const textColor = !scrolled && isHome ? "text-white" : "text-foreground";
+  const mutedColor = !scrolled && isHome ? "text-white/70" : "text-muted-foreground";
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light");
