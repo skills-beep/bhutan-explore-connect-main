@@ -1,66 +1,121 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Send, MessageCircle, CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, MessageCircle, XCircle } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { supabase, isSupabaseEnabled } from "@/lib/supabase";
+import type { ConnectProfile } from "@/lib/types";
 
-// Mock messages data
-const mockMessages = [
-  {
-    id: 1,
-    from: { name: "Tashi Dorji", avatar: "", verified: "ID verified" },
-    type: "stay_request",
-    subject: "Stay Request for Thimphu",
-    message: "Hi! I'm traveling to Bhutan and would love to experience local hospitality in Thimphu. I'm respectful of cultural traditions and excited to learn about Bhutanese culture.",
-    status: "pending",
-    timestamp: "2024-01-15T10:30:00Z"
-  },
-  {
-    id: 2,
-    to: { name: "Emma Wilson", avatar: "", verified: "Email verified" },
-    type: "buddy_request",
-    subject: "Travel Buddy Request",
-    message: "Hello! I saw your post about trekking in Paro and Thimphu. I'm also planning a similar trip and would love to connect. I have experience with cultural travel.",
-    status: "accepted",
-    timestamp: "2024-01-14T14:20:00Z"
-  },
-  {
-    id: 3,
-    from: { name: "Sonam Wangchuk", avatar: "", verified: "Email verified" },
-    type: "stay_request",
-    subject: "Homestay Inquiry",
-    message: "Namaste! I'm interested in your homestay in Paro. I practice meditation and would appreciate any guidance on local monasteries.",
-    status: "pending",
-    timestamp: "2024-01-16T09:15:00Z"
-  }
-];
+type ConnectionRequestRow = any;
 
 const Messages = () => {
-  const [messages, setMessages] = useState(mockMessages);
-  const [replyMessage, setReplyMessage] = useState("");
-  const [activeMessage, setActiveMessage] = useState<number | null>(null);
+  const [currentProfile, setCurrentProfile] = useState<ConnectProfile | null>(null);
+  const [requests, setRequests] = useState<ConnectionRequestRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleResponse = (messageId: number, action: 'accept' | 'decline') => {
-    setMessages(prev => prev.map(msg =>
-      msg.id === messageId ? { ...msg, status: action === 'accept' ? 'accepted' : 'declined' } : msg
-    ));
-    alert(`Request ${action}ed successfully!`);
+  useEffect(() => {
+    const saved = localStorage.getItem("currentConnectProfile");
+    if (saved) setCurrentProfile(JSON.parse(saved));
+  }, []);
+
+  const loadRequests = async () => {
+    if (!currentProfile || !isSupabaseEnabled() || !supabase) return;
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("connection_requests")
+        .select("*, from_user:connect_profiles!from_user_id(*)")
+        .or(`from_user_id.eq.${currentProfile.id},to_user_id.eq.${currentProfile.id}`)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setRequests((data ?? []) as any);
+    } catch (e: any) {
+      console.error(e);
+      toast({ title: "Error", description: "Failed to load requests", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleReply = (messageId: number) => {
-    if (!replyMessage.trim()) return;
+  useEffect(() => {
+    void loadRequests();
 
-    // Mock reply - replace with API call
-    console.log(`Replying to message ${messageId}: ${replyMessage}`);
-    alert('Reply sent successfully!');
-    setReplyMessage("");
-    setActiveMessage(null);
+    if (!currentProfile || !isSupabaseEnabled() || !supabase) return;
+
+    const channel = supabase
+      .channel("connection_requests_realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "connection_requests" },
+        () => void loadRequests()
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentProfile?.id]);
+
+  const pendingReceived = useMemo(() => {
+    if (!currentProfile) return [];
+    return requests.filter((r) => r.to_user_id === currentProfile.id && r.status === "pending");
+  }, [requests, currentProfile]);
+
+  const history = useMemo(() => {
+    return requests.filter((r) => r.status !== "pending");
+  }, [requests]);
+
+  const handleSetStatus = async (requestId: string, status: "accepted" | "rejected") => {
+    if (!isSupabaseEnabled() || !supabase) return;
+
+    const { error } = await supabase
+      .from("connection_requests")
+      .update({ status })
+      .eq("id", requestId);
+
+    if (error) {
+      console.error(error);
+      toast({ title: "Error", description: "Failed to update request", variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Success", description: `Request ${status}.` });
+    await loadRequests();
   };
 
-  const pendingMessages = messages.filter(m => m.status === 'pending');
-  const respondedMessages = messages.filter(m => m.status !== 'pending');
+  if (!currentProfile) {
+    return (
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
+        <div className="flex items-center gap-2 mb-6">
+          <MessageCircle className="h-6 w-6" />
+          <h1 className="text-2xl font-bold">Messages</h1>
+        </div>
+        <Card>
+          <CardContent className="text-center py-8">
+            <p className="text-muted-foreground">Please create your profile to view messages.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
+        <div className="flex items-center gap-2 mb-6">
+          <MessageCircle className="h-6 w-6" />
+          <h1 className="text-2xl font-bold">Messages</h1>
+        </div>
+        <p className="text-muted-foreground">Loading requests...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
@@ -69,45 +124,46 @@ const Messages = () => {
         <h1 className="text-2xl font-bold">Messages</h1>
       </div>
 
-      {/* Pending Requests */}
-      {pendingMessages.length > 0 && (
+      {pendingReceived.length > 0 ? (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              Pending Requests ({pendingMessages.length})
+              <div className="w-2 h-2 bg-orange-500 rounded-full" />
+              Pending Requests ({pendingReceived.length})
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {pendingMessages.map((msg) => (
-              <div key={msg.id} className="border rounded-lg p-4 space-y-3">
+            {pendingReceived.map((req) => (
+              <div key={req.id} className="border rounded-lg p-4 space-y-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={msg.from?.avatar} />
-                      <AvatarFallback>{msg.from?.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={(req.from_user as any)?.profilePhoto} />
+                      <AvatarFallback>
+                        {(req.from_user?.name ?? "?")
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{msg.from?.name}</span>
+                        <span className="font-medium">{req.from_user?.name ?? "Unknown"}</span>
                         <Badge variant="secondary" className="text-xs">
-                          {msg.from?.verified}
+                          pending
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">{msg.subject}</p>
+                      <p className="text-sm text-muted-foreground">{new Date(req.created_at).toLocaleString()}</p>
                     </div>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(msg.timestamp).toLocaleDateString()}
-                  </span>
                 </div>
 
-                <p className="text-sm bg-muted p-3 rounded-md">{msg.message}</p>
+                <p className="text-sm bg-muted p-3 rounded-md">{req.message}</p>
 
                 <div className="flex gap-2">
                   <Button
                     size="sm"
-                    onClick={() => handleResponse(msg.id, 'accept')}
+                    onClick={() => handleSetStatus(req.id as any, "accepted")}
                     className="bg-green-600 hover:bg-green-700"
                   >
                     <CheckCircle className="h-4 w-4 mr-1" />
@@ -116,90 +172,67 @@ const Messages = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => handleResponse(msg.id, 'decline')}
+                    onClick={() => handleSetStatus(req.id as any, "rejected")}
                     className="border-red-300 text-red-600 hover:bg-red-50"
                   >
                     <XCircle className="h-4 w-4 mr-1" />
                     Decline
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setActiveMessage(activeMessage === msg.id ? null : msg.id)}
-                  >
-                    Reply
-                  </Button>
                 </div>
-
-                {activeMessage === msg.id && (
-                  <div className="flex gap-2 mt-3">
-                    <Input
-                      placeholder="Type your reply..."
-                      value={replyMessage}
-                      onChange={(e) => setReplyMessage(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button size="sm" onClick={() => handleReply(msg.id)}>
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
               </div>
             ))}
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
-      {/* Responded Messages */}
-      {respondedMessages.length > 0 && (
+      {history.length > 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              Previous Messages
-            </CardTitle>
+            <CardTitle>Previous Requests</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {respondedMessages.map((msg) => (
-              <div key={msg.id} className="border rounded-lg p-4 space-y-3 opacity-75">
-                <div className="flex items-start justify-between">
+            {history.map((req) => (
+              <div key={req.id} className="border rounded-lg p-4 space-y-2 opacity-75">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={msg.from?.avatar || msg.to?.avatar} />
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={(req.from_user as any)?.profilePhoto} />
                       <AvatarFallback>
-                        {(msg.from?.name || msg.to?.name).split(' ').map(n => n[0]).join('')}
+                        {(req.from_user?.name ?? "?")
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{msg.from?.name || msg.to?.name}</span>
-                        <Badge variant={msg.status === 'accepted' ? 'default' : 'secondary'} className="text-xs">
-                          {msg.status}
+                        <span className="font-medium">{req.from_user?.name ?? "Unknown"}</span>
+                        <Badge
+                          variant={req.status === "accepted" ? "default" : "secondary"}
+                          className="text-xs"
+                        >
+                          {req.status}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">{msg.subject}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(req.created_at).toLocaleString()}</p>
                     </div>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(msg.timestamp).toLocaleDateString()}
-                  </span>
                 </div>
-
-                <p className="text-sm bg-muted p-3 rounded-md">{msg.message}</p>
+                <p className="text-sm bg-muted p-3 rounded-md">{req.message}</p>
               </div>
             ))}
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
-      {messages.length === 0 && (
+      {pendingReceived.length === 0 && history.length === 0 ? (
         <Card>
           <CardContent className="text-center py-8">
             <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No messages yet. Start connecting with hosts and travel buddies!</p>
+            <p className="text-muted-foreground">No requests yet. Start connecting with hosts and travel buddies!</p>
           </CardContent>
         </Card>
-      )}
+      ) : null}
     </div>
   );
 };

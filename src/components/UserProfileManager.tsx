@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,10 +8,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, Shield, Star } from "lucide-react";
+import { Shield } from "lucide-react";
 import Messages from "./Messages";
+import { supabase, isSupabaseEnabled } from "@/lib/supabase";
+import type { ConnectProfile } from "@/lib/types";
 
 interface UserProfile {
   id: string;
@@ -46,7 +47,7 @@ interface UserProfile {
 
 const UserProfileManager = () => {
   const [profile, setProfile] = useState<UserProfile>({
-    id: '1',
+    id: '',
     name: '',
     email: '',
     age: 0,
@@ -55,16 +56,105 @@ const UserProfileManager = () => {
     interests: [],
     verified: 'unverified',
     isHost: false,
-    isLookingForBuddy: false
+    isLookingForBuddy: false,
   });
+
+  const currentId = useMemo(() => profile.id, [profile.id]);
+
+  useEffect(() => {
+    // Prefer the connect profile stored by this app
+    const saved = localStorage.getItem("currentConnectProfile");
+    if (!saved) return;
+
+    try {
+      const p = JSON.parse(saved) as Partial<ConnectProfile> & { id?: string };
+      if (!p.id) return;
+
+      setProfile((prev) => ({
+        ...prev,
+        id: String(p.id ?? ""),
+        name: String(p.name ?? prev.name),
+        email: String(p.email ?? prev.email),
+        age: Number(p.age ?? prev.age),
+        gender: p.gender ?? prev.gender,
+        bio: String(p.bio ?? prev.bio),
+        languages: (p.languages as any) ?? prev.languages,
+        interests: (p.interests as any) ?? prev.interests,
+        verified: (p.verified as any) ?? prev.verified,
+        profilePhoto: (p as any).profilePhoto ?? (p as any).profile_photo ?? prev.profilePhoto,
+        isHost: Boolean((p as any).isHost ?? (p as any).is_host ?? prev.isHost),
+        isLookingForBuddy: Boolean(
+          (p as any).isLookingForBuddy ?? (p as any).is_looking_for_buddy ?? prev.isLookingForBuddy
+        ),
+        hostDetails: (p as any).hostDetails ?? (p as any).host_details ?? prev.hostDetails,
+        buddyDetails: (p as any).buddyDetails ?? (p as any).buddy_details ?? prev.buddyDetails,
+      }));
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const [activeTab, setActiveTab] = useState('basic');
 
-  const handleSave = () => {
-    // Mock save - replace with API call
-    console.log('Saving profile:', profile);
-    localStorage.setItem('userProfile', JSON.stringify(profile));
-    alert('Profile saved successfully!');
+  const handleSave = async () => {
+    if (!isSupabaseEnabled() || !supabase) {
+      alert("Supabase is not configured.");
+      return;
+    }
+
+    if (!profile.id) {
+      alert("Missing profile id. Create profile first.");
+      return;
+    }
+
+    // Persist to connect_profiles (company_id is locked by RLS/trigger)
+    const payload: any = {
+      id: profile.id,
+      name: profile.name,
+      email: profile.email,
+      age: profile.age,
+      gender: profile.gender ?? null,
+      bio: profile.bio,
+      profile_photo: profile.profilePhoto ?? null,
+      email_verified: profile.verified === "email" || profile.verified === "id",
+      verified: profile.verified,
+      languages: profile.languages ?? [],
+      interests: profile.interests ?? [],
+      is_host: Boolean(profile.isHost),
+      is_looking_for_buddy: Boolean(profile.isLookingForBuddy),
+      host_details: profile.isHost ? profile.hostDetails ?? null : null,
+      buddy_details: profile.isLookingForBuddy ? profile.buddyDetails ?? null : null,
+      profile_visibility: "public",
+      // travel_group_code/emergency fields are not in current UI; leave as-is on update
+    };
+
+    // Upsert by id
+    const { error } = await supabase
+      .from("connect_profiles")
+      .upsert(payload, { onConflict: "id" });
+
+    if (error) {
+      console.error("Profile save error:", error);
+      alert("Failed to save profile.");
+      return;
+    }
+
+    // Mirror in localStorage for other components to show immediately
+    const updatedForLocal: any = {
+      ...profile,
+      emailVerified: payload.email_verified,
+      profilePhoto: payload.profile_photo,
+      isHost: payload.is_host,
+      isLookingForBuddy: payload.is_looking_for_buddy,
+      hostDetails: payload.host_details,
+      buddyDetails: payload.buddy_details,
+      profileVisibility: payload.profile_visibility,
+      createdAt: (localStorage.getItem("currentConnectProfile") ? JSON.parse(localStorage.getItem("currentConnectProfile") as string).createdAt : undefined) ?? undefined,
+    };
+
+    localStorage.setItem("currentConnectProfile", JSON.stringify(updatedForLocal));
+    localStorage.setItem("connectProfiles", JSON.stringify([updatedForLocal]));
+    alert("Profile saved successfully!");
   };
 
   const handleVerification = (type: 'email' | 'id') => {
@@ -167,9 +257,10 @@ const UserProfileManager = () => {
                       <Checkbox
                         checked={profile.languages.includes(lang)}
                         onCheckedChange={(checked) => {
+                          const on = Boolean(checked);
                           setProfile(prev => ({
                             ...prev,
-                            languages: checked
+                            languages: on
                               ? [...prev.languages, lang]
                               : prev.languages.filter(l => l !== lang)
                           }));
@@ -189,9 +280,10 @@ const UserProfileManager = () => {
                       <Checkbox
                         checked={profile.interests.includes(interest)}
                         onCheckedChange={(checked) => {
+                          const on = Boolean(checked);
                           setProfile(prev => ({
                             ...prev,
-                            interests: checked
+                            interests: on
                               ? [...prev.interests, interest]
                               : prev.interests.filter(i => i !== interest)
                           }));
@@ -217,8 +309,8 @@ const UserProfileManager = () => {
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="isHost"
-                  checked={profile.isHost}
-                  onCheckedChange={(checked) => setProfile(prev => ({ ...prev, isHost: checked }))}
+                  checked={Boolean(profile.isHost)}
+                  onCheckedChange={(checked) => setProfile(prev => ({ ...prev, isHost: Boolean(checked) }))}
                 />
                 <Label htmlFor="isHost">I can host travelers</Label>
               </div>
@@ -296,10 +388,10 @@ const UserProfileManager = () => {
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="isPaid"
-                      checked={profile.hostDetails?.isPaid}
+                      checked={Boolean(profile.hostDetails?.isPaid)}
                       onCheckedChange={(checked) => setProfile(prev => ({
                         ...prev,
-                        hostDetails: { ...prev.hostDetails!, isPaid: checked }
+                        hostDetails: { ...prev.hostDetails!, isPaid: Boolean(checked) }
                       }))}
                     />
                     <Label htmlFor="isPaid">This is a paid homestay (licensed)</Label>
@@ -312,8 +404,8 @@ const UserProfileManager = () => {
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="isLookingForBuddy"
-                  checked={profile.isLookingForBuddy}
-                  onCheckedChange={(checked) => setProfile(prev => ({ ...prev, isLookingForBuddy: checked }))}
+                  checked={Boolean(profile.isLookingForBuddy)}
+                  onCheckedChange={(checked) => setProfile(prev => ({ ...prev, isLookingForBuddy: Boolean(checked) }))}
                 />
                 <Label htmlFor="isLookingForBuddy">I'm looking for a travel companion</Label>
               </div>
@@ -328,11 +420,12 @@ const UserProfileManager = () => {
                           <Checkbox
                             checked={profile.buddyDetails?.destinations.includes(dest)}
                             onCheckedChange={(checked) => {
+                              const on = Boolean(checked);
                               setProfile(prev => ({
                                 ...prev,
                                 buddyDetails: {
                                   ...prev.buddyDetails!,
-                                  destinations: checked
+                                  destinations: on
                                     ? [...(prev.buddyDetails?.destinations || []), dest]
                                     : (prev.buddyDetails?.destinations || []).filter(d => d !== dest)
                                 }
@@ -421,11 +514,12 @@ const UserProfileManager = () => {
                           <Checkbox
                             checked={profile.buddyDetails?.activities.includes(activity)}
                             onCheckedChange={(checked) => {
+                              const on = Boolean(checked);
                               setProfile(prev => ({
                                 ...prev,
                                 buddyDetails: {
                                   ...prev.buddyDetails!,
-                                  activities: checked
+                                  activities: on
                                     ? [...(prev.buddyDetails?.activities || []), activity]
                                     : (prev.buddyDetails?.activities || []).filter(a => a !== activity)
                                 }

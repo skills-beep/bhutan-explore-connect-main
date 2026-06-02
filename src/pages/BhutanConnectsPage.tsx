@@ -72,24 +72,31 @@ const BhutanConnectsPage = () => {
       }
     };
 
-    loadProfiles();
+    void loadProfiles();
 
     let channel: any;
+
     if (isSupabaseEnabled()) {
-      channel = supabase!.channel("public:connect_profiles")
-        .on(
-          "postgres_changes",
-          { event: "INSERT", schema: "public", table: "connect_profiles" },
-          (payload) => {
+      channel = supabase!.channel("public:connect_profiles").on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "connect_profiles" },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
             setProfiles((prev) => [mapProfileRow(payload.new), ...prev]);
+          } else if (payload.eventType === "UPDATE") {
+            const updated = mapProfileRow(payload.new);
+            setProfiles((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+          } else if (payload.eventType === "DELETE") {
+            const deletedId = payload.old?.id;
+            if (deletedId) setProfiles((prev) => prev.filter((p) => p.id !== deletedId));
           }
-        )
-        .subscribe();
+        }
+      ).subscribe();
     }
 
     return () => {
-      if (channel) {
-        void supabase.removeChannel(channel);
+      if (channel && isSupabaseEnabled()) {
+        void supabase!.removeChannel(channel);
       }
     };
   }, []);

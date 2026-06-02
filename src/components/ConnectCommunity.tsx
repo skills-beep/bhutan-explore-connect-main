@@ -23,6 +23,29 @@ const ConnectCommunity = () => {
   const [connectionRequests, setConnectionRequests] = useState<{ from: string; to: string; message: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const normalizeConnectProfile = (p: any): ConnectProfile => ({
+    id: p?.id ?? "",
+    name: p?.name ?? "",
+    email: p?.email ?? "",
+    age: Number(p?.age ?? 18),
+    gender: p?.gender,
+    bio: p?.bio ?? "",
+    profilePhoto: p?.profilePhoto ?? p?.profile_photo,
+    emailVerified: Boolean(p?.emailVerified ?? p?.email_verified ?? false),
+    travelGroupCode: p?.travelGroupCode ?? p?.travel_group_code,
+    emergencyContactName: p?.emergencyContactName ?? p?.emergency_contact_name,
+    emergencyContactPhone: p?.emergencyContactPhone ?? p?.emergency_contact_phone,
+    languages: Array.isArray(p?.languages) ? p.languages : p?.languages ?? [],
+    interests: Array.isArray(p?.interests) ? p.interests : p?.interests ?? [],
+    verified: (p?.verified ?? "unverified") as any,
+    isHost: Boolean(p?.isHost ?? p?.is_host ?? false),
+    isLookingForBuddy: Boolean(p?.isLookingForBuddy ?? p?.is_looking_for_buddy ?? false),
+    hostDetails: p?.hostDetails ?? p?.host_details,
+    buddyDetails: p?.buddyDetails ?? p?.buddy_details,
+    createdAt: p?.createdAt ?? p?.created_at ?? new Date().toISOString(),
+    profileVisibility: (p?.profileVisibility ?? p?.profile_visibility ?? "public") as any,
+  });
+
   // Map database row to ConnectProfile
   const mapProfileRow = (row: any): ConnectProfile => ({
     id: row.id,
@@ -32,9 +55,13 @@ const ConnectCommunity = () => {
     gender: row.gender,
     bio: row.bio,
     profilePhoto: row.profile_photo,
+    emailVerified: row.email_verified ?? row.emailVerified ?? false,
+    travelGroupCode: row.travel_group_code ?? row.travelGroupCode,
+    emergencyContactName: row.emergency_contact_name ?? row.emergencyContactName,
+    emergencyContactPhone: row.emergency_contact_phone ?? row.emergencyContactPhone,
     languages: row.languages ?? [],
     interests: row.interests ?? [],
-    verified: row.verified,
+    verified: row.verified ?? "unverified",
     isHost: row.is_host ?? false,
     isLookingForBuddy: row.is_looking_for_buddy ?? false,
     hostDetails: row.host_details,
@@ -50,7 +77,28 @@ const ConnectCommunity = () => {
       // Load current user profile from localStorage
       const saved = localStorage.getItem("currentConnectProfile");
       if (saved) {
-        setCurrentProfile(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        setCurrentProfile({
+          ...parsed,
+          emailVerified: Boolean(parsed.emailVerified ?? parsed.email_verified ?? false),
+          isHost: Boolean(parsed.isHost ?? false),
+          isLookingForBuddy: Boolean(parsed.isLookingForBuddy ?? false),
+          languages: Array.isArray(parsed.languages) ? parsed.languages : [],
+          interests: Array.isArray(parsed.interests) ? parsed.interests : [],
+          verified: (parsed.verified ?? parsed.verified_status ?? "unverified") as any,
+          profileVisibility: (parsed.profileVisibility ?? "public") as any,
+          createdAt: parsed.createdAt ?? parsed.created_at ?? new Date().toISOString(),
+          profilePhoto: parsed.profilePhoto ?? parsed.profile_photo,
+          idCardScan: parsed.idCardScan ?? parsed.id_card_scan,
+          facePhoto: parsed.facePhoto ?? parsed.face_photo,
+          travelGroupCode: parsed.travelGroupCode ?? parsed.travel_group_code,
+          emergencyContactName:
+            parsed.emergencyContactName ?? parsed.emergency_contact_name,
+          emergencyContactPhone:
+            parsed.emergencyContactPhone ?? parsed.emergency_contact_phone,
+          hostDetails: parsed.hostDetails ?? parsed.host_details,
+          buddyDetails: parsed.buddyDetails ?? parsed.buddy_details,
+        });
       }
 
       // Load profiles from Supabase if enabled
@@ -191,12 +239,6 @@ const ConnectCommunity = () => {
       createdAt: new Date().toISOString(),
     };
 
-    // Save to localStorage as backup
-    const existing = JSON.parse(localStorage.getItem("connectionRequests") || "[]");
-    existing.push(newRequest);
-    localStorage.setItem("connectionRequests", JSON.stringify(existing));
-
-    // Save to Supabase if enabled
     if (isSupabaseEnabled()) {
       const { error } = await supabase!.from("connection_requests").insert({
         from_user_id: newRequest.from,
@@ -207,12 +249,23 @@ const ConnectCommunity = () => {
 
       if (error) {
         console.error("Error sending connection request:", error);
-        toast({ title: "Error", description: "Failed to send connection request", variant: "destructive" });
+        toast({
+          title: "Error",
+          description: "Failed to send connection request (Supabase)",
+          variant: "destructive",
+        });
         return;
       }
+
+      toast({ title: "Success", description: "Connection request sent (Supabase)!" });
+      return;
     }
 
-    toast({ title: "Success", description: "Connection request sent!" });
+    // Supabase disabled: keep localStorage backup only
+    const existing = JSON.parse(localStorage.getItem("connectionRequests") || "[]");
+    existing.push(newRequest);
+    localStorage.setItem("connectionRequests", JSON.stringify(existing));
+    toast({ title: "Saved locally", description: "Supabase not enabled; stored in localStorage." });
   };
 
   const getLocations = () => {
