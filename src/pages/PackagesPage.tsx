@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import { packages } from "@/data/packages";
 import PackageCard from "@/components/PackageCard";
-import { motion } from "framer-motion";
+import { useScrollReveal } from "@/hooks/use-motion";
 import { Search, X } from "lucide-react";
 
 const styles = ["All", "Cultural", "Luxury", "Adventure"];
@@ -9,6 +10,8 @@ const styles = ["All", "Cultural", "Luxury", "Adventure"];
 const PackagesPage = () => {
   const [search, setSearch] = useState("");
   const [selectedStyle, setSelectedStyle] = useState("All");
+  const searchRevealRef = useScrollReveal({ y: 25, duration: 0.75 });
+  const gridRevealRef = useScrollReveal({ y: 30, duration: 0.8, delay: 0.05 });
 
   const filtered = useMemo(() => {
     return packages.filter((pkg) => {
@@ -31,7 +34,7 @@ const PackagesPage = () => {
         </motion.div>
 
         {/* Search & Filter */}
-        <div className="mb-10 space-y-4">
+        <div ref={searchRevealRef} className="mb-10 space-y-4">
           <div className="relative max-w-md mx-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
@@ -65,7 +68,7 @@ const PackagesPage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div ref={gridRevealRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((pkg, i) => (
             <PackageCard key={pkg.id} pkg={pkg} index={i} />
           ))}

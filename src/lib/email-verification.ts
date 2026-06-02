@@ -1,6 +1,6 @@
 // Frontend utility to interact with email verification API
 
-const API_BASE = process.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export const emailVerificationService = {
   async sendVerificationCode(email: string, userName: string) {

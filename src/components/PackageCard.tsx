@@ -1,14 +1,18 @@
-import { Star, Clock, MapPin } from "lucide-react";
+import { Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { TravelPackage } from "@/data/packages";
 import { motion } from "framer-motion";
+import { useHoverScale } from "@/hooks/use-motion";
 
-import festivalMask1 from "@/assets/festival-mask-1.png";
-import festivalMask2 from "@/assets/festival-mask-2.png";
-import festivalMask3 from "@/assets/festival-mask-3.png";
-import festivalMask4 from "@/assets/festival-mask-4.png";
-
-const images = [festivalMask1, festivalMask2, festivalMask3, festivalMask4, festivalMask1, festivalMask2];
+// Unique tour-related images for each package - all different and non-repeating
+const images = [
+  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&h=600&fit=crop", // Classic Western Tour
+  "https://images.unsplash.com/photo-1552520514-5fefe8c9ef14?w=800&h=600&fit=crop", // Luxury Wellness
+  "https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800&h=600&fit=crop", // Druk Path Trek
+  "https://images.unsplash.com/photo-1530281700549-e82e7da489c7?w=800&h=600&fit=crop", // Cultural Tour
+  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop", // Eastern Explorer
+  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=600&fit=crop", // Festival Special
+];
 
 interface PackageCardProps {
   pkg: TravelPackage;
@@ -16,8 +20,11 @@ interface PackageCardProps {
 }
 
 const PackageCard = ({ pkg, index = 0 }: PackageCardProps) => {
+  const hoverRef = useHoverScale(1.02);
+
   return (
     <motion.div
+      ref={hoverRef}
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}

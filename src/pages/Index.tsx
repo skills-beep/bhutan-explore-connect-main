@@ -1,6 +1,7 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useGlow, useParallax, useScrollReveal } from "@/hooks/use-motion";
 import festivalMask1 from "@/assets/festival-mask-1.png";
 import festivalMask2 from "@/assets/festival-mask-2.png";
 import festivalMask3 from "@/assets/festival-mask-3.png";
@@ -18,8 +19,6 @@ import haaImage from "@/assets/haa.jpg";
 import bhutanImage from "@/assets/bhutan.avif";
 import { packages, destinations } from "@/data/packages";
 import PackageCard from "@/components/PackageCard";
-import { useRef } from "react";
-import ThreeScene from "@/components/ThreeScene";
 import PremiumCinematicHero from "@/components/PremiumCinematicHero";
 
 const destinationImages: Record<string, string> = {
@@ -39,6 +38,12 @@ const Section = ({ children, className = "" }: { children: React.ReactNode; clas
 
 const Index = () => {
   const featuredPackages = packages.slice(0, 3);
+  const introRevealRef = useScrollReveal({ y: 30, duration: 0.85 });
+  const ctaRevealRef = useScrollReveal({ y: 30, duration: 0.85, delay: 0.1 });
+  const destinationsRevealRef = useScrollReveal({ y: 30, duration: 0.85 });
+  const festivalRevealRef = useScrollReveal({ y: 30, duration: 0.85 });
+  const heroImageRef = useParallax(0.16);
+  const buttonGlowRef = useGlow();
 
   return (
     <div className="min-h-screen bg-background">
@@ -74,15 +79,16 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
           {/* Image */}
           <motion.div
+            ref={heroImageRef}
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
             className="rounded-3xl overflow-hidden"
           >
-            <img 
-              src={bhutanImage} 
-              alt="Beautiful landscape of Bhutan with mountains and valleys" 
+            <img
+              src={bhutanImage}
+              alt="Beautiful landscape of Bhutan with mountains and valleys"
               className="w-full h-auto object-contain"
               loading="lazy"
             />
@@ -90,6 +96,7 @@ const Index = () => {
 
           {/* Content */}
           <motion.div
+            ref={introRevealRef}
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -129,13 +136,7 @@ const Index = () => {
 
       {/* Intro Text */}
       <Section className="bg-background">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="text-center"
-        >
+        <div ref={destinationsRevealRef} className="text-center">
           <h2 className="apple-headline text-3xl md:text-5xl lg:text-[56px] text-foreground mb-6">
             A kingdom that measures<br />
             <span className="text-muted-foreground">Gross National Happiness.</span>
@@ -143,12 +144,13 @@ const Index = () => {
           <p className="text-muted-foreground text-lg md:text-xl font-light max-w-2xl mx-auto apple-body">
             Bhutan is the world's only carbon-negative country, where 70% of the land is pristine forest and ancient Buddhist traditions have thrived for over 1,200 years.
           </p>
-        </motion.div>
+        </div>
       </Section>
 
       {/* Bhutan Connects CTA */}
       <Section className="bg-primary/5">
         <motion.div
+          ref={ctaRevealRef}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -161,11 +163,13 @@ const Index = () => {
           <p className="text-muted-foreground text-lg md:text-xl font-light max-w-2xl mx-auto mb-8 apple-body">
             Find a local host for authentic hospitality or connect with fellow travelers to share your Bhutan journey.
           </p>
-          <Link to="/bhutan-connects">
-            <Button variant="apple" size="lg" className="px-8">
-              Find a Couch or Travel Buddy in Bhutan
-            </Button>
-          </Link>
+          <div ref={buttonGlowRef} className="inline-flex rounded-full p-1 bg-gradient-to-r from-primary to-secondary shadow-xl shadow-primary/20">
+            <Link to="/bhutan-connects">
+              <Button variant="apple" size="lg" className="px-8 bg-background/95">
+                Find a Couch or Travel Buddy in Bhutan
+              </Button>
+            </Link>
+          </div>
         </motion.div>
       </Section>
 
@@ -242,13 +246,7 @@ const Index = () => {
       {/* Festivals — Big cinematic showcase */}
       <section className="bg-foreground py-24 md:py-32">
         <div className="max-w-[980px] mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
+          <div ref={festivalRevealRef} className="text-center mb-16">
             <p className="text-primary-foreground/50 text-sm font-medium mb-2">Living traditions</p>
             <h2 className="apple-headline text-3xl md:text-5xl text-primary-foreground mb-4">
               Sacred Festivals
@@ -256,7 +254,7 @@ const Index = () => {
             <p className="text-primary-foreground/60 text-lg font-light max-w-xl mx-auto apple-body">
               Centuries-old masked dances performed during Tshechu celebrations across Bhutan's ancient monasteries.
             </p>
-          </motion.div>
+          </div>
 
           {/* Large feature image */}
           <motion.div

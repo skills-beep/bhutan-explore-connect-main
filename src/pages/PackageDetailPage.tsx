@@ -6,12 +6,39 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import festivalMask1 from "@/assets/festival-mask-1.png";
-import festivalMask2 from "@/assets/festival-mask-2.png";
-import festivalMask3 from "@/assets/festival-mask-3.png";
-import festivalMask4 from "@/assets/festival-mask-4.png";
-
-const allImages = [festivalMask1, festivalMask2, festivalMask3, festivalMask4, festivalMask1, festivalMask2];
+// Package-specific images - unique for each tour type
+const packageImageMap: Record<string, string[]> = {
+  "1": [ // Classic Western Tour
+    "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=600&fit=crop",
+  ],
+  "2": [ // Luxury & Wellness Retreat
+    "https://images.unsplash.com/photo-1552520514-5fefe8c9ef14?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1540390769289-25540f18934d?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&h=600&fit=crop",
+  ],
+  "3": [ // Druk Path Trek
+    "https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&h=600&fit=crop",
+  ],
+  "4": [ // In-Depth Cultural Tour
+    "https://images.unsplash.com/photo-1530281700549-e82e7da489c7?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
+  ],
+  "5": [ // Eastern Bhutan Explorer
+    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800&h=600&fit=crop",
+  ],
+  "6": [ // Bhutan Festival Special
+    "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1530281700549-e82e7da489c7?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1552520514-5fefe8c9ef14?w=800&h=600&fit=crop",
+  ],
+};
 
 const PackageDetailPage = () => {
   const { id } = useParams();
@@ -30,10 +57,10 @@ const PackageDetailPage = () => {
     );
   }
 
-  const pkgImages = [
-    allImages[parseInt(pkg.id) - 1] || allImages[0],
-    allImages[(parseInt(pkg.id)) % allImages.length],
-    allImages[(parseInt(pkg.id) + 1) % allImages.length],
+  const pkgImages = packageImageMap[pkg.id] || [
+    "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=600&fit=crop",
   ];
 
   const handleInquiry = (e: React.FormEvent) => {

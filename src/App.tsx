@@ -18,6 +18,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import SplashScreen from "./components/SplashScreen";
 import { ThemeProvider } from "./components/ThemeProvider";
+import ErrorOverlay from "./components/ErrorOverlay";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="bhutan-theme">
+        <ErrorOverlay />
         <TooltipProvider>
           <SplashScreen isVisible={showSplash} />
           <Toaster />

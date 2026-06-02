@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Send, Check, X, Clock } from "lucide-react";
+import { MessageCircle, Send, Check, X, Clock, Circle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase, isSupabaseEnabled } from "@/lib/supabase";
 import type { ConnectProfile } from "@/lib/types";
@@ -31,7 +31,14 @@ interface Message {
   to_user_id: string;
   message: string;
   created_at: string;
+  read_at?: string;
   from_user?: ConnectProfile;
+}
+
+interface OnlineStatus {
+  user_id: string;
+  is_online: boolean;
+  last_seen_at: string;
 }
 
 const MessagesInbox = () => {
@@ -42,21 +49,36 @@ const MessagesInbox = () => {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messageText, setMessageText] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [onlineUsers, setOnlineUsers] = useState<Record<string, OnlineStatus>>({});
 
   useEffect(() => {
     const saved = localStorage.getItem("currentConnectProfile");
     if (saved) {
-      setCurrentProfile(JSON.parse(saved));
+      const profile = JSON.parse(saved);
+      setCurrentProfile(profile);
+      
+      // Set user as online when component mounts
+      updateUserPresence(profile.id, true);
     }
 
     loadData();
+
+    // Cleanup: set user as offline when component unmounts
+    return () => {
+      if (saved) {
+        const profile = JSON.parse(saved);
+        updateUserPresence(profile.id, false);
+      }
+    };
   }, []);
 
+  // Subscribe to real-time updates
   useEffect(() => {
     if (!currentProfile) return;
 
     let requestChannel: any;
     let messageChannel: any;
+    let presenceChannel: any;
 
     if (isSupabaseEnabled()) {
       // Subscribe to connection requests
@@ -80,6 +102,17 @@ const MessagesInbox = () => {
           }
         )
         .subscribe();
+
+      // Subscribe to presence
+      presenceChannel = supabase!.channel("user_presence_changes")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "user_presence" },
+          () => {
+            loadOnlineUsers();
+          }
+        )
+        .subscribe();
     }
 
     return () => {
@@ -89,56 +122,95 @@ const MessagesInbox = () => {
       if (messageChannel && isSupabaseEnabled()) {
         void supabase!.removeChannel(messageChannel);
       }
+      if (presenceChannel && isSupabaseEnabled()) {
+        void supabase!.removeChannel(presenceChannel);
+      }
     };
   }, [currentProfile]);
+
+  const updateUserPresence = async (userId: string, isOnline: boolean) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/presence/update`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, isOnline }),
+        }
+      );
+      
+      if (response.ok) {
+        await loadOnlineUsers();
+      }
+    } catch (error) {
+      console.error('Presence update error:', error);
+    }
+  };
+
+  const loadOnlineUsers = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/presence/online`
+      );
+      
+      if (response.ok) {
+        const result = await response.json();
+        const onlineMap: Record<string, OnlineStatus> = {};
+        result.data?.forEach((user: OnlineStatus) => {
+          onlineMap[user.user_id] = user;
+        });
+        setOnlineUsers(onlineMap);
+      }
+    } catch (error) {
+      console.error('Load online users error:', error);
+    }
+  };
 
   const loadData = async () => {
     if (!currentProfile) return;
 
     setIsLoading(true);
 
-    // Load received requests
-    if (isSupabaseEnabled()) {
-      const { data: recReqs, error: recErr } = await supabase!
-        .from("connection_requests")
-        .select(`*, from_user:connect_profiles!from_user_id(*)`)
-        .eq("to_user_id", currentProfile.id);
+    try {
+      if (isSupabaseEnabled()) {
+        // Load received requests
+        const { data: recReqs } = await supabase!
+          .from("connection_requests")
+          .select(`*, from_user:connect_profiles!from_user_id(*)`)
+          .eq("to_user_id", currentProfile.id);
 
-      if (!recErr) {
-        setReceivedRequests(recReqs || []);
+        if (recReqs) {
+          setReceivedRequests(recReqs);
+        }
+
+        // Load sent requests
+        const { data: sentReqs } = await supabase!
+          .from("connection_requests")
+          .select(`*, to_user:connect_profiles!to_user_id(*)`)
+          .eq("from_user_id", currentProfile.id);
+
+        if (sentReqs) {
+          setSentRequests(sentReqs);
+        }
+
+        // Load messages
+        const { data: msgs } = await supabase!
+          .from("messages")
+          .select(`*, from_user:connect_profiles!from_user_id(*)`)
+          .or(
+            `from_user_id.eq.${currentProfile.id},to_user_id.eq.${currentProfile.id}`
+          )
+          .order("created_at", { ascending: false });
+
+        if (msgs) {
+          setMessages(msgs);
+        }
+
+        // Load online users
+        await loadOnlineUsers();
       }
-
-      // Load sent requests
-      const { data: sentReqs, error: sentErr } = await supabase!
-        .from("connection_requests")
-        .select(`*, to_user:connect_profiles!to_user_id(*)`)
-        .eq("from_user_id", currentProfile.id);
-
-      if (!sentErr) {
-        setSentRequests(sentReqs || []);
-      }
-
-      // Load messages
-      const { data: msgs, error: msgErr } = await supabase!
-        .from("messages")
-        .select(`*, from_user:connect_profiles!from_user_id(*)`)
-        .or(
-          `from_user_id.eq.${currentProfile.id},to_user_id.eq.${currentProfile.id}`
-        )
-        .order("created_at", { ascending: false });
-
-      if (!msgErr) {
-        setMessages(msgs || []);
-      }
-    } else {
-      // Fallback to localStorage
-      const reqs = JSON.parse(
-        localStorage.getItem("connectionRequests") || "[]"
-      );
-      const receivedReqs = reqs.filter((r: any) => r.to === currentProfile.id);
-      const sentReqs = reqs.filter((r: any) => r.from === currentProfile.id);
-      setReceivedRequests(receivedReqs);
-      setSentRequests(sentReqs);
+    } catch (error) {
+      console.error('Load data error:', error);
     }
 
     setIsLoading(false);
@@ -154,71 +226,98 @@ const MessagesInbox = () => {
       return;
     }
 
-    const { error } = await supabase!
-      .from("connection_requests")
-      .update({ status: "accepted" })
-      .eq("id", requestId);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/connection-requests/${requestId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'accepted' }),
+        }
+      );
 
-    if (error) {
+      if (response.ok) {
+        toast({ title: "Success", description: "Request accepted!" });
+        loadData();
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to accept request",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Accept request error:', error);
       toast({
         title: "Error",
         description: "Failed to accept request",
         variant: "destructive",
       });
-    } else {
-      toast({ title: "Success", description: "Request accepted!" });
-      loadData();
     }
   };
 
   const handleRejectRequest = async (requestId: string) => {
     if (!isSupabaseEnabled()) return;
 
-    const { error } = await supabase!
-      .from("connection_requests")
-      .update({ status: "rejected" })
-      .eq("id", requestId);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/connection-requests/${requestId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'rejected' }),
+        }
+      );
 
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to reject request",
-        variant: "destructive",
-      });
-    } else {
-      toast({ title: "Request rejected" });
-      loadData();
+      if (response.ok) {
+        toast({ title: "Request rejected" });
+        loadData();
+      }
+    } catch (error) {
+      console.error('Reject request error:', error);
     }
   };
 
   const handleSendMessage = async (toUserId: string) => {
     if (!currentProfile || !messageText.trim()) return;
 
-    const newMessage = {
-      from_user_id: currentProfile.id,
-      to_user_id: toUserId,
-      message: messageText,
-      created_at: new Date().toISOString(),
-    };
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/messages`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fromUserId: currentProfile.id,
+            toUserId,
+            message: messageText,
+          }),
+        }
+      );
 
-    if (isSupabaseEnabled()) {
-      const { error } = await supabase!
-        .from("messages")
-        .insert([newMessage]);
-
-      if (error) {
+      if (response.ok) {
+        setMessageText("");
+        toast({ title: "Message sent!" });
+        loadData();
+      } else {
         toast({
           title: "Error",
           description: "Failed to send message",
           variant: "destructive",
         });
-        return;
       }
+    } catch (error) {
+      console.error('Send message error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message",
+        variant: "destructive",
+      });
     }
+  };
 
-    setMessageText("");
-    toast({ title: "Message sent!" });
-    loadData();
+  const isUserOnline = (userId: string) => {
+    return onlineUsers[userId]?.is_online === true;
   };
 
   if (isLoading) {
@@ -443,6 +542,7 @@ const MessagesInbox = () => {
                           );
                         const partner =
                           partnerReq?.from_user || partnerReq?.to_user;
+                        const online = isUserOnline(partnerId);
 
                         return (
                           <button
@@ -450,18 +550,48 @@ const MessagesInbox = () => {
                             onClick={() =>
                               setSelectedConversation(partnerId)
                             }
-                            className={`w-full text-left p-3 rounded-lg transition-colors ${
+                            className={`w-full text-left p-3 rounded-lg transition-colors relative ${
                               selectedConversation === partnerId
                                 ? "bg-primary text-primary-foreground"
                                 : "hover:bg-muted"
                             }`}
                           >
-                            <p className="font-medium text-sm">
-                              {partner?.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {partner?.age} • {partner?.bio?.substring(0, 30)}...
-                            </p>
+                            <div className="flex items-start gap-2">
+                              <div className="relative">
+                                <Avatar className="h-10 w-10">
+                                  <AvatarImage
+                                    src={partner?.profilePhoto}
+                                  />
+                                  <AvatarFallback>
+                                    {partner?.name
+                                      .split(" ")
+                                      .map((n) => n[0])
+                                      .join("")}
+                                  </AvatarFallback>
+                                </Avatar>
+                                {online && (
+                                  <Circle className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 fill-green-500 rounded-full border-2 border-white" />
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-1">
+                                  <p className="font-medium text-sm">
+                                    {partner?.name}
+                                  </p>
+                                  {online && (
+                                    <Circle className="w-2 h-2 bg-green-500 fill-green-500 rounded-full" />
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  {partner?.age} • {partner?.bio?.substring(0, 25)}...
+                                </p>
+                                {online && (
+                                  <p className="text-xs text-green-600 font-medium">
+                                    Online now
+                                  </p>
+                                )}
+                              </div>
+                            </div>
                           </button>
                         );
                       })}
@@ -473,17 +603,27 @@ const MessagesInbox = () => {
                 {selectedConversation && (
                   <Card className="lg:col-span-2">
                     <CardHeader>
-                      <CardTitle className="text-lg">
-                        Chat with{" "}
-                        {
-                          (receivedRequests.find(
-                            (r) => r.from_user_id === selectedConversation
-                          )?.from_user ||
-                            sentRequests.find(
-                              (r) => r.to_user_id === selectedConversation
-                            )?.to_user)?.name
-                        }
-                      </CardTitle>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-lg">
+                            Chat with{" "}
+                            {
+                              (receivedRequests.find(
+                                (r) => r.from_user_id === selectedConversation
+                              )?.from_user ||
+                                sentRequests.find(
+                                  (r) => r.to_user_id === selectedConversation
+                                )?.to_user)?.name
+                            }
+                          </CardTitle>
+                          {isUserOnline(selectedConversation) && (
+                            <Badge className="bg-green-600">
+                              <Circle className="w-2 h-2 mr-1 fill-current" />
+                              Online
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <ScrollArea className="h-64 border rounded-lg p-4 bg-muted/30">
@@ -517,6 +657,7 @@ const MessagesInbox = () => {
                                     {new Date(
                                       msg.created_at
                                     ).toLocaleTimeString()}
+                                    {msg.read_at && " • Read"}
                                   </p>
                                 </div>
                               </div>

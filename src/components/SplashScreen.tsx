@@ -9,7 +9,7 @@ const SplashScreen = ({ isVisible }: SplashScreenProps) => {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-foreground"
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black text-white"
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
