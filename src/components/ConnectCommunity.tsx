@@ -24,12 +24,12 @@ const ConnectCommunity = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const normalizeConnectProfile = (p: any): ConnectProfile => ({
-    id: p?.id ?? "",
-    name: p?.name ?? "",
-    email: p?.email ?? "",
+    id: String(p?.id ?? ""),
+    name: String(p?.name ?? ""),
+    email: String(p?.email ?? ""),
     age: Number(p?.age ?? 18),
-    gender: p?.gender,
-    bio: p?.bio ?? "",
+    gender: p?.gender ? String(p.gender) : undefined,
+    bio: String(p?.bio ?? ""),
     profilePhoto: p?.profilePhoto ?? p?.profile_photo,
     emailVerified: Boolean(p?.emailVerified ?? p?.email_verified ?? false),
     travelGroupCode: p?.travelGroupCode ?? p?.travel_group_code,
@@ -46,29 +46,31 @@ const ConnectCommunity = () => {
     profileVisibility: (p?.profileVisibility ?? p?.profile_visibility ?? "public") as any,
   });
 
+
   // Map database row to ConnectProfile
   const mapProfileRow = (row: any): ConnectProfile => ({
-    id: row.id,
-    name: row.name,
-    email: row.email,
-    age: row.age,
-    gender: row.gender,
-    bio: row.bio,
-    profilePhoto: row.profile_photo,
-    emailVerified: row.email_verified ?? row.emailVerified ?? false,
-    travelGroupCode: row.travel_group_code ?? row.travelGroupCode,
-    emergencyContactName: row.emergency_contact_name ?? row.emergencyContactName,
-    emergencyContactPhone: row.emergency_contact_phone ?? row.emergencyContactPhone,
-    languages: row.languages ?? [],
-    interests: row.interests ?? [],
-    verified: row.verified ?? "unverified",
-    isHost: row.is_host ?? false,
-    isLookingForBuddy: row.is_looking_for_buddy ?? false,
-    hostDetails: row.host_details,
-    buddyDetails: row.buddy_details,
-    createdAt: row.created_at,
-    profileVisibility: row.profile_visibility ?? "public",
+    id: String(row?.id ?? ""),
+    name: String(row?.name ?? ""),
+    email: String(row?.email ?? ""),
+    age: Number(row?.age ?? 18),
+    gender: row?.gender ? String(row.gender) : undefined,
+    bio: String(row?.bio ?? ""),
+    profilePhoto: row?.profile_photo ?? row?.profilePhoto,
+    emailVerified: Boolean(row?.email_verified ?? row?.emailVerified ?? false),
+    travelGroupCode: row?.travel_group_code ?? row?.travelGroupCode,
+    emergencyContactName: row?.emergency_contact_name ?? row?.emergencyContactName,
+    emergencyContactPhone: row?.emergency_contact_phone ?? row?.emergencyContactPhone,
+    languages: Array.isArray(row?.languages) ? row.languages : [],
+    interests: Array.isArray(row?.interests) ? row.interests : [],
+    verified: (row?.verified ?? "unverified") as any,
+    isHost: Boolean(row?.is_host ?? row?.isHost ?? false),
+    isLookingForBuddy: Boolean(row?.is_looking_for_buddy ?? row?.isLookingForBuddy ?? false),
+    hostDetails: row?.host_details,
+    buddyDetails: row?.buddy_details,
+    createdAt: row?.created_at ?? row?.createdAt ?? new Date().toISOString(),
+    profileVisibility: (row?.profile_visibility ?? row?.profileVisibility ?? "public") as any,
   });
+
 
   useEffect(() => {
     const loadProfiles = async () => {
@@ -107,7 +109,10 @@ const ConnectCommunity = () => {
           .from("connect_profiles")
           .select("*")
           .eq("profile_visibility", "public")
+          .eq("verified", "id")
+          .eq("email_verified", true)
           .order("created_at", { ascending: false });
+
 
         if (error) {
           console.error("Error loading profiles:", error);
@@ -175,15 +180,21 @@ const ConnectCommunity = () => {
   }, [profiles, searchTerm, filterType, selectedLocation]);
 
   const filterProfiles = (list: ConnectProfile[], search: string, type: string, location: string) => {
-    let filtered = list.filter((p) => p.profileVisibility === "public");
+    let filtered = list
+      .filter((p) => p.profileVisibility === "public")
+      .filter((p) => p.verified === "id")
+      .filter((p) => p.emailVerified === true);
+
 
     if (search) {
-      filtered = filtered.filter(
-        (p) =>
-          p.name.toLowerCase().includes(search.toLowerCase()) ||
-          p.bio.toLowerCase().includes(search.toLowerCase())
-      );
+      const q = search.toLowerCase();
+      filtered = filtered.filter((p) => {
+        const name = (p.name ?? "").toLowerCase();
+        const bio = (p.bio ?? "").toLowerCase();
+        return name.includes(q) || bio.includes(q);
+      });
     }
+
 
     if (type === "hosts") {
       filtered = filtered.filter((p) => p.isHost);

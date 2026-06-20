@@ -24,17 +24,30 @@ const PackagesPage = () => {
   return (
     <div className="min-h-screen pt-20 pb-24 bg-background">
       <div className="max-w-[980px] mx-auto px-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pt-8 mb-12 text-center">
-          <h1 className="apple-headline text-4xl md:text-6xl text-foreground mb-3">
-            Travel Packages
-          </h1>
-          <p className="text-muted-foreground text-lg font-light apple-body">
-            Curated Bhutan experiences from trusted operators.
-          </p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="relative overflow-hidden rounded-3xl border border-border/70 bg-background shadow-soft"
+        >
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-black/20 via-transparent to-[hsl(var(--forest))]/10" />
+          <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-gradient-gold opacity-20 blur-2xl" />
+          <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-gradient-forest opacity-15 blur-2xl" />
+
+          <div className="relative p-10 md:p-12">
+            <div className="text-center">
+              <h1 className="apple-headline text-4xl md:text-6xl text-foreground mb-3">
+                Travel Packages
+              </h1>
+              <p className="text-muted-foreground text-lg font-light apple-body">
+                Curated Bhutan experiences from trusted operators.
+              </p>
+            </div>
+          </div>
         </motion.div>
 
         {/* Search & Filter */}
-        <div ref={searchRevealRef} className="mb-10 space-y-4">
+        <div ref={searchRevealRef} className="mt-10 mb-10 space-y-4">
           <div className="relative max-w-md mx-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
