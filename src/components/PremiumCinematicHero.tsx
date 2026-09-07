@@ -7,7 +7,7 @@ import landingpageMain from "@/assets/ladningpagemain.jpg";
 /**
  * Premium Cinematic Hero with Advanced Depth Layering
  * Features automatic foreground detection and layered text masking
- * Creates 3D effect where "The last" stays in front and "Shangri-La" goes behind the dancer
+ * Creates 3D effect where "The last" stays in front and "Zangri-La" goes behind the dancer
  */
 const PremiumCinematicHero: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -210,7 +210,7 @@ const PremiumCinematicHero: React.FC = () => {
               {/* Spacing for Visual Separation */}
               <div className="h-3 sm:h-6" />
 
-              {/* Bottom Text: "Shangri-La" with Depth Effect */}
+              {/* Bottom Text: "Zangri-La" with Depth Effect */}
               <div className="relative group">
                 {/* Blur Backdrop for Depth Effect */}
                 <motion.div
@@ -224,7 +224,7 @@ const PremiumCinematicHero: React.FC = () => {
                   transition={{ duration: 1 }}
                 />
 
-                {/* Main "Shangri-La" Text with Golden-Orange Gradient */}
+                {/* Main "Zangri-La" Text with Golden-Orange Gradient */}
                 <motion.h2
                   className="relative text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-light italic text-center leading-none tracking-tight"
                   style={{
@@ -239,7 +239,7 @@ const PremiumCinematicHero: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, delay: 0.3 }}
                 >
-                  Shangri-La
+                  Zangri-La
                 </motion.h2>
 
                 {/* Subtle Overlay Effect for Masking Appearance */}
