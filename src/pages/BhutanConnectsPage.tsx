@@ -139,7 +139,7 @@ const BhutanConnectsPage = () => {
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <h3 className="text-sm font-semibold truncate text-black dark:text-white">{host.name}, {host.age}</h3>
+            <h3 className="text-sm font-semibold truncate text-foreground">{host.name}, {host.age}</h3>
             <Badge variant={host.verified === 'id' ? 'default' : 'secondary'} className="text-xs whitespace-nowrap flex-shrink-0">
               {host.verified === 'id' ? 'Verified' : 'Unverified'}
             </Badge>
@@ -201,7 +201,7 @@ const BhutanConnectsPage = () => {
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <h3 className="text-sm font-semibold truncate text-black dark:text-white">{buddy.name}, {buddy.age}</h3>
+            <h3 className="text-sm font-semibold truncate text-foreground">{buddy.name}, {buddy.age}</h3>
             <Badge variant={buddy.verified === 'id' ? 'default' : 'secondary'} className="text-xs whitespace-nowrap flex-shrink-0">
               {buddy.verified === 'id' ? 'Verified' : 'Unverified'}
             </Badge>

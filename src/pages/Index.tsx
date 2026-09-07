@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { ArrowRight, HeartHandshake, ShieldCheck, Users } from "lucide-react";
 import { useGlow, useParallax, useScrollReveal } from "@/hooks/use-motion";
 import festivalMask1 from "@/assets/festival-mask-1.png";
 import festivalMask2 from "@/assets/festival-mask-2.png";
@@ -157,20 +158,49 @@ const Index = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center"
+          className="relative overflow-hidden rounded-[2rem] border border-border bg-card px-6 py-10 shadow-card md:px-10 md:py-12"
         >
-          <h2 className="apple-headline text-3xl md:text-5xl text-foreground mb-6">
-            Connect with Bhutan
-          </h2>
-          <p className="text-muted-foreground text-lg md:text-xl font-light max-w-2xl mx-auto mb-8 apple-body">
-            Find a local host for authentic hospitality or connect with fellow travelers to share your Bhutan journey.
-          </p>
-          <div ref={buttonGlowRef} className="inline-flex rounded-full p-1 bg-gradient-to-r from-primary to-secondary shadow-xl shadow-primary/20">
-            <Link to="/bhutan-connects">
-              <Button variant="apple" size="lg" className="px-8 bg-background/95">
-                Find a Couch or Travel Buddy in Bhutan
-              </Button>
-            </Link>
+          <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-forest/10 blur-3xl" />
+          <div className="relative grid gap-10 md:grid-cols-[1.1fr_0.9fr] md:items-center">
+            <div>
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
+                <HeartHandshake className="h-3.5 w-3.5 text-forest" />
+                Travel with connection
+              </div>
+              <h2 className="apple-headline text-3xl md:text-5xl text-foreground mb-4">
+                Meet the people<br />
+                <span className="text-muted-foreground">behind the journey.</span>
+              </h2>
+              <p className="text-muted-foreground text-base md:text-lg font-light max-w-xl mb-7 apple-body">
+                Find a welcoming local host, share the road with a fellow traveler, and experience Bhutan through genuine human connection.
+              </p>
+              <div ref={buttonGlowRef} className="inline-flex rounded-full p-1 bg-forest shadow-xl shadow-forest/20">
+                <Link to="/bhutan-connects">
+                  <Button variant="forest" size="lg" className="px-7 bg-forest text-white hover:bg-forest/90">
+                    Explore Bhutan Connects
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3 md:grid-cols-1">
+              {[
+                { icon: Users, title: "Find your people", text: "Meet hosts and travelers with shared interests." },
+                { icon: HeartHandshake, title: "Go deeper", text: "Trade a typical itinerary for local perspective." },
+                { icon: ShieldCheck, title: "Connect safely", text: "Verified profiles help every introduction feel considered." },
+              ].map(({ icon: Icon, title, text }) => (
+                <div key={title} className="flex items-start gap-3 rounded-2xl border border-border bg-background/75 p-4 text-left">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-forest/10 text-forest">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </motion.div>
       </Section>

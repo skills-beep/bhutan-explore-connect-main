@@ -305,7 +305,7 @@ const ConnectCommunity = () => {
           </Avatar>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-lg font-semibold text-black dark:text-white">{profile.name}, {profile.age}</h3>
+              <h3 className="text-lg font-semibold text-foreground">{profile.name}, {profile.age}</h3>
               <Badge variant={profile.verified === "id" ? "default" : "secondary"} className="text-xs">
                 {profile.verified === "id" ? "✓ ID" : profile.verified === "email" ? "✓ Email" : "Unverified"}
               </Badge>
@@ -363,7 +363,7 @@ const ConnectCommunity = () => {
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-black dark:text-white">Connect with {profile.name}</DialogTitle>
+            <DialogTitle className="text-foreground">Connect with {profile.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
@@ -401,7 +401,7 @@ const ConnectCommunity = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-12 text-center"
         >
-          <h2 className="apple-headline text-4xl md:text-5xl text-black dark:text-white mb-3">Bhutan Connects Community</h2>
+          <h2 className="apple-headline text-4xl md:text-5xl text-foreground mb-3">Bhutan Connects Community</h2>
           <p className="text-muted-foreground text-lg">
             {isSupabaseEnabled() ? "🔗 Real-time connected • " : ""}Find your perfect host or travel buddy
           </p>
