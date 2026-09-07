@@ -5,10 +5,11 @@ import { Link } from "react-router-dom";
 import { TravelPackage } from "@/data/packages";
 import { motion } from "framer-motion";
 import { useHoverScale } from "@/hooks/use-motion";
+import westernBuddhaImage from "@/assets/westerntour/BUDDHA-POINT-1-1-scaled.jpg";
 
 // Unique tour-related images for each package - all different and non-repeating
 const images = [
-  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&h=900&fit=crop",
+  westernBuddhaImage,
   "https://images.unsplash.com/photo-1552520514-5fefe8c9ef14?w=1200&h=900&fit=crop",
   "https://images.unsplash.com/photo-1464207687429-7505649dae38?w=1200&h=900&fit=crop",
   "https://images.unsplash.com/photo-1530281700549-e82e7da489c7?w=1200&h=900&fit=crop",

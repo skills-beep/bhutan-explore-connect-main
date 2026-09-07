@@ -5,13 +5,18 @@ import { Star, Clock, MapPin, Check, X, ArrowLeft, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
+import westernBuddhaImage from "@/assets/westerntour/BUDDHA-POINT-1-1-scaled.jpg";
+import westernDochulaImage from "@/assets/westerntour/DOCHULA.jpeg";
+import westernPunakhaImage from "@/assets/westerntour/PUNAKHA.webp";
+import westernParoImage from "@/assets/westerntour/paro.jpg";
 
 // Package-specific images - unique for each tour type
 const packageImageMap: Record<string, string[]> = {
   "1": [ // Classic Western Tour
-    "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=600&fit=crop",
+    westernBuddhaImage,
+    westernDochulaImage,
+    westernPunakhaImage,
+    westernParoImage,
   ],
   "2": [ // Luxury & Wellness Retreat
     "https://images.unsplash.com/photo-1552520514-5fefe8c9ef14?w=800&h=600&fit=crop",
