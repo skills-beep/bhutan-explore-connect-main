@@ -41,6 +41,7 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <div id="google_translate_element" className="hidden" aria-hidden="true" />
             <Navbar />
             <Routes>
               <Route path="/" element={<Index />} />

@@ -10,6 +10,17 @@ body {
   background: black;
 }
 
+/* Keep the translation service controls invisible while retaining our language menu. */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-gadget,
+body > .skiptranslate {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+}
+
 /* Ensure headings/text use the same professional UI font */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);

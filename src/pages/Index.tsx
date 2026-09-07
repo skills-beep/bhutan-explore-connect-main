@@ -16,10 +16,10 @@ import phobijaImage from "@/assets/phobija.avif";
 import punakhaImage from "@/assets/punakha.jpg";
 import thimphuImage from "@/assets/thimphu.png";
 import haaImage from "@/assets/haa.jpg";
-import bhutanImage from "@/assets/bhutan.avif";
 import { packages, destinations } from "@/data/packages";
 import PackageCard from "@/components/PackageCard";
 import PremiumCinematicHero from "@/components/PremiumCinematicHero";
+import InteractiveBhutanMap from "@/components/InteractiveBhutanMap";
 
 const destinationImages: Record<string, string> = {
   paro: paroImage,
@@ -74,27 +74,20 @@ const Index = () => {
         </div>
       </section>
 
-      {/* About Bhutan Section with Image */}
+      {/* Map-led introduction */}
       <Section className="bg-background">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
-          {/* Image */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-center">
           <motion.div
             ref={heroImageRef}
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="rounded-3xl overflow-hidden"
+            className="relative overflow-hidden rounded-[2rem] bg-background shadow-[0_24px_70px_-28px_rgba(15,56,70,0.18)]"
           >
-            <img
-              src={bhutanImage}
-              alt="Beautiful landscape of Bhutan with mountains and valleys"
-              className="w-full h-auto object-contain"
-              loading="lazy"
-            />
+            <InteractiveBhutanMap />
           </motion.div>
 
-          {/* Content */}
           <motion.div
             ref={introRevealRef}
             initial={{ opacity: 0, x: 50 }}
@@ -103,24 +96,33 @@ const Index = () => {
             transition={{ duration: 0.8 }}
           >
             <p className="text-primary/60 text-sm font-medium tracking-widest uppercase mb-4">
-              Discover the Land
+              Find your way
             </p>
             <h2 className="apple-headline text-4xl md:text-5xl text-foreground mb-6">
-              Welcome to Bhutan
+              One kingdom.<br />
+              <span className="text-muted-foreground">Endless discoveries.</span>
             </h2>
-            <div className="space-y-5 text-muted-foreground text-lg font-light apple-body leading-relaxed">
+            <div className="space-y-4 text-muted-foreground text-lg font-light apple-body leading-relaxed">
               <p>
-                Nestled high in the Eastern Himalayas, Bhutan is a nation unlike any other. While the world measures progress by GDP, Bhutan measures it by <span className="text-foreground font-semibold">Gross National Happiness</span> — a philosophy that prioritizes well-being over material wealth.
+                From the high peaks of the north to the subtropical valleys in the south, every turn in Bhutan reveals a new story.
               </p>
               <p>
-                This pristine kingdom is a sanctuary of unspoiled beauty, where <span className="text-foreground font-semibold">70% of the land remains forested</span> and carbon emissions are entirely offset by vast tracts of protected wilderness. Bhutan is the world's only <span className="text-foreground font-semibold">carbon-negative country</span>, a distinction it guards with pride and purpose.
+                Use the map to get your bearings, then choose the landscapes, monasteries, and living traditions that belong in your journey.
               </p>
-              <p>
-                Ancient Buddhist traditions have flourished here for over 1,200 years, creating a living culture where sacred monasteries perch on cliff faces, traditional architecture graces every village, and festivals celebrate age-old rituals that connect communities to their spiritual heritage.
-              </p>
-              <p>
-                Come experience a place where nature thrives, spirituality runs deep, and happiness is not a distant goal but a way of life. This is Bhutan — the Last Shangri-La.
-              </p>
+            </div>
+            <div className="mt-7 grid grid-cols-3 gap-3 border-y border-border py-4">
+              <div>
+                <p className="text-xl font-semibold text-foreground">70%</p>
+                <p className="text-xs text-muted-foreground">Forest cover</p>
+              </div>
+              <div>
+                <p className="text-xl font-semibold text-foreground">1,200+</p>
+                <p className="text-xs text-muted-foreground">Years of heritage</p>
+              </div>
+              <div>
+                <p className="text-xl font-semibold text-foreground">6</p>
+                <p className="text-xs text-muted-foreground">Places to begin</p>
+              </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 mt-8">
               <Link to="/destinations">

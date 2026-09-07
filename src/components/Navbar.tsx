@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "./ThemeProvider";
 import logoImage from "@/assets/logo2.png";
+import LanguageSelector from "./LanguageSelector";
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -64,6 +65,7 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
+            <LanguageSelector light={!scrolled && isHome} />
             <button
               onClick={toggleTheme}
               className={`p-2 rounded-full transition-colors ${mutedColor} hover:${textColor}`}
@@ -76,9 +78,12 @@ const Navbar = () => {
             </Link>
           </div>
 
-          <button onClick={() => setMobileOpen(!mobileOpen)} className={`md:hidden ${textColor}`}>
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          <div className="flex items-center gap-3 md:hidden">
+            <LanguageSelector light={!scrolled && isHome} />
+            <button onClick={() => setMobileOpen(!mobileOpen)} className={textColor} aria-label={mobileOpen ? "Close menu" : "Open menu"}>
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -99,6 +104,7 @@ const Navbar = () => {
               <Link to="/profile" onClick={() => setMobileOpen(false)} className="text-sm text-foreground">
                 Profile
               </Link>
+              <LanguageSelector />
               <button
                 onClick={() => {
                   toggleTheme();
