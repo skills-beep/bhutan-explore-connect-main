@@ -219,26 +219,32 @@ const Index = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {destinations.map((dest, i) => (
-            <motion.div
+            <Link
               key={dest.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1, duration: 0.7 }}
-              className="group relative rounded-3xl overflow-hidden aspect-[16/10] cursor-pointer"
+              to={`/destinations/${dest.id}`}
+              aria-label={`Explore ${dest.name}`}
+              className="group block"
             >
-              <img
-                src={destinationImages[dest.id] || festivalMask1}
-                alt={dest.name}
-                className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-8">
-                <h3 className="apple-subhead text-2xl text-primary-foreground mb-1">{dest.name}</h3>
-                <p className="text-primary-foreground/70 text-sm font-light">{dest.description}</p>
-              </div>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.7 }}
+                className="group relative rounded-3xl overflow-hidden aspect-[16/10] cursor-pointer"
+              >
+                <img
+                  src={destinationImages[dest.id] || festivalMask1}
+                  alt={dest.name}
+                  className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-8">
+                  <h3 className="apple-subhead text-2xl text-primary-foreground mb-1">{dest.name}</h3>
+                  <p className="text-primary-foreground/70 text-sm font-light">{dest.description}</p>
+                </div>
+              </motion.div>
+            </Link>
           ))}
         </div>
       </Section>

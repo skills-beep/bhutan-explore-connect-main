@@ -77,6 +77,54 @@ export const sendVerificationEmail = async (
   }
 };
 
+export const sendTravelInquiryEmail = async (
+  inquiry: {
+    name: string;
+    email: string;
+    phone?: string;
+    dates?: string;
+    travelers?: string;
+    message?: string;
+    packageName?: string;
+  }
+): Promise<boolean> => {
+  try {
+    const recipient = process.env.INQUIRY_EMAIL || 'bishalsharma153@gmail.com';
+    const mailOptions = {
+      from: process.env.GMAIL_USER,
+      to: recipient,
+      replyTo: inquiry.email,
+      subject: `New Travel Inquiry${inquiry.packageName ? ` - ${inquiry.packageName}` : ''}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; color: #1f2937;">
+          <div style="background: linear-gradient(135deg, #0f172a 0%, #166534 100%); padding: 28px; border-radius: 12px 12px 0 0; color: white;">
+            <h1 style="margin: 0; font-size: 28px;">New Bhutan Travel Inquiry</h1>
+          </div>
+          <div style="padding: 28px; background: #f8fafc; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0;">
+            <p><strong>Name:</strong> ${inquiry.name}</p>
+            <p><strong>Email:</strong> ${inquiry.email}</p>
+            <p><strong>Phone:</strong> ${inquiry.phone || 'Not provided'}</p>
+            <p><strong>Travel dates:</strong> ${inquiry.dates || 'Not provided'}</p>
+            <p><strong>Travelers:</strong> ${inquiry.travelers || 'Not provided'}</p>
+            <p><strong>Package:</strong> ${inquiry.packageName || 'General inquiry'}</p>
+            <div style="margin-top: 16px; padding: 18px; background: white; border-radius: 10px; border: 1px solid #e2e8f0;">
+              <strong>Message:</strong>
+              <p style="white-space: pre-wrap; margin-top: 10px; line-height: 1.6;">${inquiry.message || 'No message provided'}</p>
+            </div>
+          </div>
+        </div>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Travel inquiry email sent:', info.response);
+    return true;
+  } catch (error) {
+    console.error('Error sending inquiry email:', error);
+    return false;
+  }
+};
+
 export const generateVerificationCode = (): string => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };

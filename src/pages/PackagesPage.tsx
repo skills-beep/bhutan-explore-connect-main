@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { packages } from "@/data/packages";
 import PackageCard from "@/components/PackageCard";
 import { useScrollReveal } from "@/hooks/use-motion";
-import { Search, X } from "lucide-react";
+import { Search, X, ArrowRightLeft } from "lucide-react";
 
 const styles = ["All", "Cultural", "Luxury", "Adventure"];
 
@@ -48,20 +49,30 @@ const PackagesPage = () => {
 
         {/* Search & Filter */}
         <div ref={searchRevealRef} className="mt-10 mb-10 space-y-4">
-          <div className="relative max-w-md mx-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search packages..."
-              className="w-full pl-11 pr-4 py-3 border border-border rounded-full bg-background text-foreground text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground/10 outline-none transition-all"
-            />
-            {search && (
-              <button onClick={() => setSearch("")} className="absolute right-4 top-1/2 -translate-y-1/2">
-                <X className="w-4 h-4 text-muted-foreground" />
-              </button>
-            )}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="relative max-w-md w-full">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search packages..."
+                className="w-full pl-11 pr-4 py-3 border border-border rounded-full bg-background text-foreground text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground/10 outline-none transition-all"
+              />
+              {search && (
+                <button onClick={() => setSearch("")} className="absolute right-4 top-1/2 -translate-y-1/2">
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+
+            <Link
+              to="/currency-converter"
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary/80"
+            >
+              <ArrowRightLeft className="w-4 h-4" />
+              Currency Converter
+            </Link>
           </div>
 
           <div className="flex justify-center gap-2">

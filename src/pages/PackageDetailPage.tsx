@@ -63,10 +63,36 @@ const PackageDetailPage = () => {
     "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=600&fit=crop",
   ];
 
-  const handleInquiry = (e: React.FormEvent) => {
+  const handleInquiry = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Inquiry sent! The tour operator will contact you shortly.");
-    setInquiry({ name: "", email: "", phone: "", dates: "", travelers: "2", message: "" });
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/send-inquiry`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: inquiry.name,
+          email: inquiry.email,
+          phone: inquiry.phone,
+          dates: inquiry.dates,
+          travelers: inquiry.travelers,
+          message: inquiry.message,
+          packageName: pkg.title,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Unable to send inquiry');
+      }
+
+      toast.success('Inquiry sent! Your message has been forwarded to bishalsharma153@gmail.com.');
+      setInquiry({ name: "", email: "", phone: "", dates: "", travelers: "2", message: "" });
+    } catch (error) {
+      console.error('Inquiry submit error:', error);
+      toast.error(error instanceof Error ? error.message : 'Something went wrong while sending your inquiry.');
+    }
   };
 
   const inputClass = "w-full px-4 py-2.5 text-sm border border-border rounded-xl bg-background text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-foreground/10 transition-all";
@@ -157,7 +183,7 @@ const PackageDetailPage = () => {
           <div className="lg:col-span-2">
             <div className="sticky top-20 rounded-3xl border border-border bg-background p-6">
               <div className="mb-5">
-                <span className="apple-headline text-3xl text-foreground">${pkg.price.toLocaleString()}</span>
+                <span className="apple-headline text-3xl text-foreground">Nu {new Intl.NumberFormat("en-US").format(pkg.price)}</span>
                 <span className="text-muted-foreground text-sm ml-1">per person</span>
               </div>
               <p className="text-xs text-muted-foreground mb-6">All-inclusive with SDF, accommodation, meals, and guide.</p>

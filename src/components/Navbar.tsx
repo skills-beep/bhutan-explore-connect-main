@@ -13,6 +13,7 @@ const navLinks = [
   { to: "/bhutan-connects", label: "Connect" },
   { to: "/messages", label: "Messages" },
   { to: "/companies", label: "Companies" },
+  { to: "/contact", label: "Contact" },
 ];
 
 const Navbar = () => {

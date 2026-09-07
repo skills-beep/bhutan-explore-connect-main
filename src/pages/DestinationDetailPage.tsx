@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { destinations } from "@/data/packages";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Compass, MapPinned, Sparkles } from "lucide-react";
 import bumthangImage from "@/assets/bumthang.webp";
 import paroImage from "@/assets/paro.jpg";
 import phobijaImage from "@/assets/phobija.avif";
@@ -59,13 +59,46 @@ const DestinationDetailPage = () => {
             <p className="text-foreground text-base leading-8 max-w-3xl">{destination.details}</p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {destination.highlights.map((highlight) => (
-              <div key={highlight} className="rounded-3xl border border-border bg-background p-6">
-                <p className="text-sm font-semibold text-foreground mb-2">Highlight</p>
-                <p className="text-sm text-muted-foreground">{highlight}</p>
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              { label: "Why visit", icon: Sparkles, items: destination.highlights },
+              { label: "Must-do", icon: Compass, items: destination.mustDo },
+              { label: "Best for", icon: MapPinned, items: destination.bestFor },
+            ].map((section) => (
+              <div key={section.label} className="rounded-3xl border border-border bg-background p-6">
+                <div className="mb-4 flex items-center gap-2 text-foreground">
+                  <section.icon className="w-4 h-4" />
+                  <p className="text-sm font-semibold">{section.label}</p>
+                </div>
+                <ul className="space-y-2">
+                  {section.items.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
+          </div>
+
+          <div className="rounded-3xl border border-border bg-secondary/30 p-6">
+            <h2 className="apple-subhead text-2xl text-foreground mb-4">What makes this place special</h2>
+            <p className="text-sm leading-7 text-muted-foreground max-w-3xl">
+              {destination.description} Beyond the famous highlights, this destination offers a deeper Bhutanese experience with landscapes, culture, and slow travel moments that stay with you long after the trip ends.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <h2 className="apple-subhead text-2xl text-foreground">Popular experiences</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {destination.highlights.map((highlight) => (
+                <div key={highlight} className="rounded-3xl border border-border bg-background p-6">
+                  <p className="text-sm font-semibold text-foreground mb-2">Highlight</p>
+                  <p className="text-sm text-muted-foreground">{highlight}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </motion.div>
       </div>

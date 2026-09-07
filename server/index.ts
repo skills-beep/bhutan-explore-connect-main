@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import { sendVerificationEmail, generateVerificationCode } from './email-service';
+import https from 'https';
+import { sendVerificationEmail, generateVerificationCode, sendTravelInquiryEmail } from './email-service';
 import { supabase } from './supabase-config';
 
 const app = express();
@@ -79,6 +80,101 @@ app.post('/api/verify-email', async (req, res) => {
     res.json({ success: true, message: 'Email verified successfully!' });
   } catch (error) {
     console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Fetch live currency conversion rate
+app.get('/api/currency-rate', async (_req, res) => {
+  try {
+    const fetchRate = () =>
+      new Promise<string>((resolve, reject) => {
+        const request = https.get('https://www.google.com/finance/quote/USD-BTN?hl=en', (response) => {
+          let data = '';
+          response.on('data', (chunk) => {
+            data += chunk.toString();
+          });
+          response.on('end', () => {
+            const clean = data.replace(/\n/g, ' ');
+            const patterns = [
+              /1\s*USD\s*=\s*([0-9]+(?:,[0-9]+)*(?:\.\d+)?)\s*BTN/i,
+              /USD\/BTN[^0-9]*([0-9]+(?:,[0-9]+)*(?:\.\d+)?)/i,
+              /([0-9]+(?:,[0-9]+)*(?:\.\d+)?)\s*BTN[^0-9]*USD/i,
+            ];
+
+            for (const pattern of patterns) {
+              const match = clean.match(pattern);
+              if (match) {
+                resolve(match[1].replace(/,/g, ''));
+                return;
+              }
+            }
+
+            const fallback = clean.match(/([0-9]+(?:\.[0-9]+)?)\s*\w+\s*\w+\s*Bhutanese\s*Ngultrum/i);
+            if (fallback) {
+              resolve(fallback[1]);
+              return;
+            }
+
+            reject(new Error('Could not parse exchange rate from Google Finance'));
+          });
+        });
+
+        request.on('error', reject);
+      });
+
+    const rate = await fetchRate();
+    const numericRate = Number(rate);
+
+    if (!Number.isFinite(numericRate) || numericRate <= 0) {
+      throw new Error('Invalid exchange rate received');
+    }
+
+    res.json({ success: true, rate: numericRate, source: 'Google Finance', currency: 'BTN' });
+  } catch (error) {
+    console.error('Currency rate fetch failed:', error);
+
+    try {
+      const fallback = await fetch('https://api.exchangerate.host/convert?from=USD&to=BTN');
+      const payload = await fallback.json();
+
+      if (fallback.ok && payload && payload.result) {
+        return res.json({ success: true, rate: Number(payload.result), source: 'ExchangeRate.host fallback', currency: 'BTN' });
+      }
+    } catch {
+      // Fall through to a proper error response below.
+    }
+
+    res.status(502).json({ error: 'Failed to fetch live Google exchange rate' });
+  }
+});
+
+// Send travel inquiry email
+app.post('/api/send-inquiry', async (req, res) => {
+  try {
+    const { name, email, phone, dates, travelers, message, packageName } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({ error: 'Name and email are required' });
+    }
+
+    const sent = await sendTravelInquiryEmail({
+      name,
+      email,
+      phone,
+      dates,
+      travelers,
+      message,
+      packageName,
+    });
+
+    if (!sent) {
+      return res.status(500).json({ error: 'Failed to send inquiry email' });
+    }
+
+    res.json({ success: true, message: 'Inquiry sent successfully' });
+  } catch (error) {
+    console.error('Inquiry send error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -8,12 +8,12 @@ import { useHoverScale } from "@/hooks/use-motion";
 
 // Unique tour-related images for each package - all different and non-repeating
 const images = [
-  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&h=600&fit=crop", // Classic Western Tour
-  "https://images.unsplash.com/photo-1552520514-5fefe8c9ef14?w=800&h=600&fit=crop", // Luxury Wellness
-  "https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800&h=600&fit=crop", // Druk Path Trek
-  "https://images.unsplash.com/photo-1530281700549-e82e7da489c7?w=800&h=600&fit=crop", // Cultural Tour
-  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop", // Eastern Explorer
-  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=600&fit=crop", // Festival Special
+  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&h=900&fit=crop",
+  "https://images.unsplash.com/photo-1552520514-5fefe8c9ef14?w=1200&h=900&fit=crop",
+  "https://images.unsplash.com/photo-1464207687429-7505649dae38?w=1200&h=900&fit=crop",
+  "https://images.unsplash.com/photo-1530281700549-e82e7da489c7?w=1200&h=900&fit=crop",
+  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=900&fit=crop",
+  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&h=900&fit=crop",
 ];
 
 interface PackageCardProps {
@@ -89,7 +89,7 @@ const PackageCard = ({ pkg, index = 0 }: PackageCardProps) => {
 
               <div className="flex items-center justify-between">
                 <span className="text-base font-semibold text-foreground tracking-tight">
-                  From ${pkg.price.toLocaleString()}
+                  From Nu {new Intl.NumberFormat("en-US").format(pkg.price)}
                 </span>
 
                 <span className="inline-flex items-center gap-2 rounded-full bg-foreground/5 px-3 py-1 border border-border/60 text-xs text-muted-foreground">
