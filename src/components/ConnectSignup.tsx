@@ -116,11 +116,13 @@ const ConnectSignup = ({ onProfileCreated }: { onProfileCreated?: (profile: Conn
       profileVisibility: profile.profileVisibility || "public",
     };
 
-    // Save to Supabase first, then localStorage as fallback
-    let savedToSupabase = false;
-    if (isSupabaseEnabled()) {
-      try {
-        const { error } = await supabase!.from("connect_profiles").insert({
+    if (!isSupabaseEnabled()) {
+      alert("Supabase is not configured. Your profile was not saved.");
+      return;
+    }
+
+    try {
+      const { error } = await supabase!.from("connect_profiles").insert({
           id: newProfile.id,
           name: newProfile.name,
           email: newProfile.email,
@@ -145,43 +147,33 @@ const ConnectSignup = ({ onProfileCreated }: { onProfileCreated?: (profile: Conn
           profile_visibility: newProfile.profileVisibility,
         });
 
-        if (error) {
-          console.error("❌ Supabase Error:", error);
-          console.error("Error code:", error.code);
-          console.error("Error message:", error.message);
+      if (error) {
+        console.error("❌ Supabase Error:", error);
+        console.error("Error code:", error.code);
+        console.error("Error message:", error.message);
           
-          // Check if it's a table not found error
-          if (error.code === "PGRST116" || error.message?.includes("relation") || error.message?.includes("does not exist")) {
-            alert(`❌ Supabase tables not created yet!\n\nPlease run the SQL setup:\n\n1. Go to your Supabase Dashboard\n2. Click "SQL Editor"\n3. Copy and run the SQL from:\n   supabase-setup.sql\n\nThen try saving your profile again.`);
-          } else if (error.code === "42501" || error.message?.includes("permission")) {
-            alert(`❌ Permission error in Supabase.\n\nMake sure Row Level Security (RLS) policies allow inserts.\n\nError: ${error.message}`);
-          } else {
-            alert(`❌ Could not save to Supabase: ${error.message}\n\nCheck the browser console for details.`);
-          }
-          return;
+        // Check if it's a table not found error
+        if (error.code === "PGRST116" || error.message?.includes("relation") || error.message?.includes("does not exist")) {
+          alert(`❌ Supabase tables not created yet!\n\nPlease run the SQL setup:\n\n1. Go to your Supabase Dashboard\n2. Click "SQL Editor"\n3. Copy and run the SQL from:\n   supabase-setup.sql\n\nThen try saving your profile again.`);
+        } else if (error.code === "42501" || error.message?.includes("permission")) {
+          alert(`❌ Permission error in Supabase.\n\nMake sure Row Level Security (RLS) policies allow inserts.\n\nError: ${error.message}`);
         } else {
-          savedToSupabase = true;
-          console.log("✅ Profile saved to Supabase!");
+          alert(`❌ Could not save to Supabase: ${error.message}\n\nCheck the browser console for details.`);
         }
-      } catch (err) {
-        console.error("❌ Unexpected error saving to Supabase:", err);
-        alert(`❌ Error: ${err instanceof Error ? err.message : "Unknown error"}`);
         return;
+      } else {
+        console.log("✅ Profile saved to Supabase!");
       }
-    } else {
-      console.warn("⚠️ Supabase not configured. Saving locally only.");
+    } catch (err) {
+      console.error("❌ Unexpected error saving to Supabase:", err);
+      alert(`❌ Error: ${err instanceof Error ? err.message : "Unknown error"}`);
+      return;
     }
 
-    // Save to localStorage as backup
-    const existingProfiles = JSON.parse(localStorage.getItem("connectProfiles") || "[]");
-    existingProfiles.push(newProfile);
-    localStorage.setItem("connectProfiles", JSON.stringify(existingProfiles));
     localStorage.setItem("currentConnectProfile", JSON.stringify(newProfile));
 
     onProfileCreated?.(newProfile);
-    alert(savedToSupabase 
-      ? "✅ Profile created successfully and saved online in Supabase!" 
-      : "⚠️ Profile saved locally. Supabase was not available.");
+    alert("✅ Profile created successfully and saved online in Supabase!");
     setStep(1);
   };
 

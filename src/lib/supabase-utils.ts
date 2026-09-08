@@ -77,7 +77,7 @@ export const connectProfiles = {
   },
 
   // Subscribe to real-time updates
-  subscribe(callback: (payload: any) => void) {
+  subscribe(callback: (payload: unknown) => void) {
     if (!isSupabaseEnabled()) return () => {};
     const channel = supabase!
       .channel("public:connect_profiles")
@@ -305,5 +305,52 @@ export const destinations = {
       .single();
     if (error) throw error;
     return data;
+  },
+};
+
+// ============================================
+// PACKAGE INQUIRIES
+// ============================================
+
+export const packageInquiries = {
+  async create(inquiry: {
+    package_id: string;
+    package_title: string;
+    company: string;
+    package_price: number;
+    name: string;
+    email: string;
+    phone?: string;
+    travel_dates?: string;
+    traveler_count: number;
+    message?: string;
+  }) {
+    if (!isSupabaseEnabled()) throw new Error("Supabase not configured");
+
+    const { data, error } = await supabase!
+      .from("package_inquiries")
+      .insert(inquiry)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  subscribe(callback: (payload: any) => void) {
+    if (!isSupabaseEnabled()) return () => {};
+
+    const channel = supabase!
+      .channel("public:package_inquiries")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "package_inquiries" },
+        callback,
+      )
+      .subscribe();
+
+    return () => {
+      void supabase!.removeChannel(channel);
+    };
   },
 };

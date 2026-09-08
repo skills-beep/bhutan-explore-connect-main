@@ -5,6 +5,8 @@ import { Star, Clock, MapPin, Check, X, ArrowLeft, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
+import { isSupabaseEnabled } from "@/lib/supabase";
+import { packageInquiries } from "@/lib/supabase-utils";
 import westernBuddhaImage from "@/assets/westerntour/BUDDHA-POINT-1-1-scaled.jpg";
 import westernDochulaImage from "@/assets/westerntour/DOCHULA.jpeg";
 import westernPunakhaImage from "@/assets/westerntour/PUNAKHA.webp";
@@ -50,6 +52,7 @@ const PackageDetailPage = () => {
   const pkg = packages.find((p) => p.id === id);
   const [selectedImage, setSelectedImage] = useState(0);
   const [inquiry, setInquiry] = useState({ name: "", email: "", phone: "", dates: "", travelers: "2", message: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!pkg) {
     return (
@@ -70,33 +73,56 @@ const PackageDetailPage = () => {
 
   const handleInquiry = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isSupabaseEnabled()) {
+      toast.error("Package inquiries are unavailable until Supabase is configured.");
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/send-inquiry`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: inquiry.name,
-          email: inquiry.email,
-          phone: inquiry.phone,
-          dates: inquiry.dates,
-          travelers: inquiry.travelers,
-          message: inquiry.message,
-          packageName: pkg.title,
-        }),
+      await packageInquiries.create({
+        package_id: pkg.id,
+        package_title: pkg.title,
+        company: pkg.company,
+        package_price: pkg.price,
+        name: inquiry.name.trim(),
+        email: inquiry.email.trim().toLowerCase(),
+        phone: inquiry.phone.trim() || undefined,
+        travel_dates: inquiry.dates.trim() || undefined,
+        traveler_count: Number(inquiry.travelers),
+        message: inquiry.message.trim() || undefined,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Unable to send inquiry');
+      let notificationSent = false;
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/send-inquiry`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: inquiry.name,
+            email: inquiry.email,
+            phone: inquiry.phone,
+            dates: inquiry.dates,
+            travelers: inquiry.travelers,
+            message: inquiry.message,
+            packageName: pkg.title,
+          }),
+        });
+        notificationSent = response.ok;
+      } catch (notificationError) {
+        console.warn('Inquiry notification unavailable; database record was saved.', notificationError);
       }
 
-      toast.success('Inquiry sent! Your message has been forwarded to bishalsharma153@gmail.com.');
+      toast.success(notificationSent
+        ? 'Inquiry saved and notification sent.'
+        : 'Inquiry saved. Email notification is currently unavailable.');
       setInquiry({ name: "", email: "", phone: "", dates: "", travelers: "2", message: "" });
     } catch (error) {
       console.error('Inquiry submit error:', error);
       toast.error(error instanceof Error ? error.message : 'Something went wrong while sending your inquiry.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -197,11 +223,12 @@ const PackageDetailPage = () => {
                 <p className="text-sm font-semibold text-foreground mb-1">Send Inquiry</p>
                 <input type="text" required placeholder="Name" value={inquiry.name} onChange={(e) => setInquiry({ ...inquiry, name: e.target.value })} className={inputClass} />
                 <input type="email" required placeholder="Email" value={inquiry.email} onChange={(e) => setInquiry({ ...inquiry, email: e.target.value })} className={inputClass} />
+                <input type="tel" placeholder="Phone" value={inquiry.phone} onChange={(e) => setInquiry({ ...inquiry, phone: e.target.value })} className={inputClass} />
                 <input type="text" placeholder="Travel Dates" value={inquiry.dates} onChange={(e) => setInquiry({ ...inquiry, dates: e.target.value })} className={inputClass} />
                 <input type="number" min="1" placeholder="Travelers" value={inquiry.travelers} onChange={(e) => setInquiry({ ...inquiry, travelers: e.target.value })} className={inputClass} />
                 <textarea placeholder="Message..." value={inquiry.message} onChange={(e) => setInquiry({ ...inquiry, message: e.target.value })} className={`${inputClass} h-20 resize-none`} />
-                <Button type="submit" variant="apple" className="w-full" size="lg">
-                  <Send className="w-4 h-4" /> Send Inquiry
+                <Button type="submit" variant="apple" className="w-full" size="lg" disabled={isSubmitting}>
+                  <Send className="w-4 h-4" /> {isSubmitting ? "Saving..." : "Send Inquiry"}
                 </Button>
               </form>
             </div>

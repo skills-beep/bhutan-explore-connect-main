@@ -135,6 +135,32 @@ create table if not exists public.destinations (
 -- Create indexes
 create index if not exists idx_destinations_name on destinations(name);
 
+-- ============================================
+-- 7. PACKAGE INQUIRIES
+-- ============================================
+-- Stores every real inquiry submitted from a package detail page.
+create table if not exists public.package_inquiries (
+  id uuid primary key default gen_random_uuid(),
+  package_id text not null,
+  package_title text not null,
+  company text not null,
+  package_price numeric not null,
+  name text not null,
+  email text not null,
+  phone text,
+  travel_dates text,
+  traveler_count integer not null default 1 check (traveler_count > 0),
+  message text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_package_inquiries_email on package_inquiries(email);
+create index if not exists idx_package_inquiries_package_id on package_inquiries(package_id);
+create index if not exists idx_package_inquiries_created_at on package_inquiries(created_at desc);
+
+alter table package_inquiries enable row level security;
+alter publication supabase_realtime add table package_inquiries;
+
 -- Enable real-time
 alter publication supabase_realtime add table destinations;
 
@@ -150,6 +176,10 @@ alter table packages enable row level security;
 alter table destinations enable row level security;
 
 -- Connect Profiles Policies
+drop policy if exists "Users can insert their own profile" on connect_profiles;
+drop policy if exists "Public visitors can register a profile" on connect_profiles;
+drop policy if exists "Public visitors can submit package inquiries" on package_inquiries;
+
 create policy "Users can view public profiles"
   on connect_profiles for select
   using (profile_visibility = 'public');
@@ -158,9 +188,9 @@ create policy "Users can view their own profile"
   on connect_profiles for select
   using (auth.uid()::text = id);
 
-create policy "Users can insert their own profile"
+create policy "Public visitors can register a profile"
   on connect_profiles for insert
-  with check (auth.uid()::text = id);
+  with check (true);
 
 create policy "Users can update their own profile"
   on connect_profiles for update
@@ -196,6 +226,12 @@ create policy "Packages are readable by everyone"
 create policy "Destinations are readable by everyone"
   on destinations for select
   using (true);
+
+-- A package inquiry is intentionally insert-only because the package form does
+-- not require an account. Review submitted inquiries in the Supabase dashboard.
+create policy "Public visitors can submit package inquiries"
+  on package_inquiries for insert
+  with check (true);
 
 -- ============================================
 -- SETUP COMPLETE!
